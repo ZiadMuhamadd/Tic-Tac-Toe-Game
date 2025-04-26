@@ -19,8 +19,8 @@ class game
     private:
 
     player board[3][3];
-    player winner;
     player currentPlayer;
+    player winner;
     int movesCounter;
 
     public:
@@ -29,11 +29,12 @@ class game
     void reset();
     bool makeMove(int row , int col);
     player getWinner();
+    bool checkWinner();
     player getCurrentPlayer();
     player getCell(int row, int col);
-    void getAvailableMOves(cell moves[]);
     void printBoard();
     bool isBoardFull();
+    bool undoMove(int row, int col);
 };
 
 #endif

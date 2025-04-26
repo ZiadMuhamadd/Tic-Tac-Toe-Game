@@ -1,0 +1,2 @@
+void HvsAI();
+void HvsH();
