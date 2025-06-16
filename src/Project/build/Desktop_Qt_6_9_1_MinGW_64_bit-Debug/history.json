@@ -29,6 +29,36 @@
             ],
             "opponent": "Ziad",
             "winner": "X"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O11",
+                "X02",
+                "O01",
+                "X21",
+                "O10",
+                "X12",
+                "O22",
+                "X20"
+            ],
+            "winner": "Tie"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O11",
+                "X22",
+                "O01",
+                "X21",
+                "O20",
+                "X02",
+                "O12",
+                "X10"
+            ],
+            "winner": "Tie"
         }
     ],
     "Ammar": [
@@ -103,6 +133,52 @@
             ],
             "opponent": "Ziad",
             "winner": "X"
+        }
+    ],
+    "Eslam": [
+        {
+            "mode": "PvP",
+            "moves": [
+                "X00",
+                "O02",
+                "X11",
+                "O21",
+                "X12",
+                "O22",
+                "X01",
+                "O20"
+            ],
+            "opponent": "Ziad",
+            "winner": "O"
+        }
+    ],
+    "Yusif": [
+        {
+            "mode": "PvP",
+            "moves": [
+                "X00",
+                "O02",
+                "X20",
+                "O11",
+                "X10"
+            ],
+            "opponent": "Ziad",
+            "winner": "X"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O11",
+                "X22",
+                "O01",
+                "X21",
+                "O20",
+                "X02",
+                "O12",
+                "X10"
+            ],
+            "winner": "Tie"
         }
     ],
     "Ziad": [
@@ -479,6 +555,33 @@
                 "X20"
             ],
             "opponent": "Adham",
+            "winner": "X"
+        },
+        {
+            "mode": "PvP",
+            "moves": [
+                "X00",
+                "O02",
+                "X11",
+                "O21",
+                "X12",
+                "O22",
+                "X01",
+                "O20"
+            ],
+            "opponent": "Eslam",
+            "winner": "O"
+        },
+        {
+            "mode": "PvP",
+            "moves": [
+                "X00",
+                "O02",
+                "X20",
+                "O11",
+                "X10"
+            ],
+            "opponent": "Yusif",
             "winner": "X"
         }
     ]
