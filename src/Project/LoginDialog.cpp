@@ -184,7 +184,7 @@ void LoginDialog::setupRegisterPage() {
 
     QLabel *titleLabel = new QLabel("Create New Account");
     titleLabel->setAlignment(Qt::AlignCenter);
-    titleLabel->setStyleSheet("font-size: 20px; font-weight: bold; color: #2c3e50; margin: 20px;");
+    titleLabel->setStyleSheet("font-size: 20px; font-weight: bold; color: #2c3e50; margin: 10px;");
     layout->addWidget(titleLabel);
 
     layout->addStretch();
@@ -313,9 +313,9 @@ void LoginDialog::setupPlayer2RegisterPage() {
     player2RegisterPage = new QWidget();
     QVBoxLayout *layout = new QVBoxLayout(player2RegisterPage);
 
-    QLabel *titleLabel = new QLabel("Player 2 - Create Account");
+    QLabel *titleLabel = new QLabel("Player 2 - Create New Account");
     titleLabel->setAlignment(Qt::AlignCenter);
-    titleLabel->setStyleSheet("font-size: 20px; font-weight: bold; color: #2c3e50; margin: 20px;");
+    titleLabel->setStyleSheet("font-size: 20px; font-weight: bold; color: #2c3e50; margin: 10px;");
     layout->addWidget(titleLabel);
 
     layout->addStretch();

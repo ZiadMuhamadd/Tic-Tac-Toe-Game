@@ -13,7 +13,8 @@ public:
     std::vector<std::pair<int, int>> getAvailableMoves() const;
     char getCell(int row, int col) const;
     void setCell(int row, int col, char value);
-
+    bool isFull() const;        // Add this method
+    void reset();               // Add this method
 private:
     char board[3][3];
 };

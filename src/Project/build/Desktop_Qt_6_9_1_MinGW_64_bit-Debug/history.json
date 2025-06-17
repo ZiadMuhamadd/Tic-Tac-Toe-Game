@@ -73,6 +73,20 @@
             ],
             "opponent": "Ziad",
             "winner": "X"
+        },
+        {
+            "mode": "PvP",
+            "moves": [
+                "X00",
+                "O11",
+                "X22",
+                "O02",
+                "X20",
+                "O10",
+                "X21"
+            ],
+            "opponent": "Ziad",
+            "winner": "X"
         }
     ],
     "Ammar": [
@@ -144,6 +158,20 @@
                 "X20",
                 "O21",
                 "X10"
+            ],
+            "opponent": "Ziad",
+            "winner": "X"
+        },
+        {
+            "mode": "PvP",
+            "moves": [
+                "X00",
+                "O11",
+                "X22",
+                "O02",
+                "X20",
+                "O10",
+                "X21"
             ],
             "opponent": "Ziad",
             "winner": "X"
@@ -611,6 +639,64 @@
             ],
             "opponent": "Adham",
             "winner": "X"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O11",
+                "X22",
+                "O01",
+                "X21",
+                "O20",
+                "X02",
+                "O12",
+                "X10"
+            ],
+            "winner": "Tie"
+        },
+        {
+            "mode": "PvP",
+            "moves": [
+                "X00",
+                "O11",
+                "X22",
+                "O02",
+                "X20",
+                "O10",
+                "X21"
+            ],
+            "opponent": "Adham",
+            "winner": "X"
+        },
+        {
+            "mode": "PvP",
+            "moves": [
+                "X00",
+                "O11",
+                "X22",
+                "O02",
+                "X20",
+                "O10",
+                "X21"
+            ],
+            "opponent": "Ammar",
+            "winner": "X"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O11",
+                "X22",
+                "O01",
+                "X21",
+                "O20",
+                "X02",
+                "O12",
+                "X10"
+            ],
+            "winner": "Tie"
         }
     ]
 }
