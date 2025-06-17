@@ -61,7 +61,7 @@ void LoginDialog::setupModeSelectionPage() {
 
     // Add quit button
     QPushButton *quitButton = new QPushButton("❌ Quit");
-    quitButton->setFixedSize(100, 40);
+    quitButton->setFixedSize(100, 50);
     quitButton->setStyleSheet(
         "QPushButton {"
         "    background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, "
@@ -96,7 +96,7 @@ void LoginDialog::setupAuthTypeSelectionPage() {
     authTypeSelectionPage = new QWidget();
     QVBoxLayout *layout = new QVBoxLayout(authTypeSelectionPage);
 
-    QLabel *titleLabel = new QLabel("Player 1 Authentication");
+    QLabel *titleLabel = new QLabel("Player 1 ");
     titleLabel->setAlignment(Qt::AlignCenter);
     titleLabel->setStyleSheet("font-size: 20px; font-weight: bold; color: #2c3e50; margin: 20px;");
     layout->addWidget(titleLabel);
@@ -119,7 +119,7 @@ void LoginDialog::setupAuthTypeSelectionPage() {
     layout->addStretch();
 
     backToModeButton = new QPushButton("← Back");
-    backToModeButton->setFixedSize(80, 30);
+    backToModeButton->setFixedSize(80, 50);
     QHBoxLayout *backLayout = new QHBoxLayout();
     backLayout->addWidget(backToModeButton);
     backLayout->addStretch();
@@ -147,12 +147,12 @@ void LoginDialog::setupLoginPage() {
 
     usernameEdit = new QLineEdit();
     usernameEdit->setPlaceholderText("Username");
-    usernameEdit->setFixedHeight(40);
+    usernameEdit->setFixedHeight(50);
 
     passwordEdit = new QLineEdit();
     passwordEdit->setPlaceholderText("Password");
     passwordEdit->setEchoMode(QLineEdit::Password);
-    passwordEdit->setFixedHeight(40);
+    passwordEdit->setFixedHeight(50);
 
     loginButton = new QPushButton("Login");
     loginButton->setFixedHeight(45);
@@ -164,7 +164,7 @@ void LoginDialog::setupLoginPage() {
     layout->addStretch();
 
     backToAuthButton = new QPushButton("← Back");
-    backToAuthButton->setFixedSize(80, 30);
+    backToAuthButton->setFixedSize(80, 50);
     QHBoxLayout *backLayout = new QHBoxLayout();
     backLayout->addWidget(backToAuthButton);
     backLayout->addStretch();
@@ -191,20 +191,20 @@ void LoginDialog::setupRegisterPage() {
 
     regUsernameEdit = new QLineEdit();
     regUsernameEdit->setPlaceholderText("Username");
-    regUsernameEdit->setFixedHeight(40);
+    regUsernameEdit->setFixedHeight(50);
 
     regPasswordEdit = new QLineEdit();
     regPasswordEdit->setPlaceholderText("Password");
     regPasswordEdit->setEchoMode(QLineEdit::Password);
-    regPasswordEdit->setFixedHeight(40);
+    regPasswordEdit->setFixedHeight(50);
 
     regConfirmPasswordEdit = new QLineEdit();
     regConfirmPasswordEdit->setPlaceholderText("Confirm Password");
     regConfirmPasswordEdit->setEchoMode(QLineEdit::Password);
-    regConfirmPasswordEdit->setFixedHeight(40);
+    regConfirmPasswordEdit->setFixedHeight(50);
 
     registerButton = new QPushButton("Sign Up");
-    registerButton->setFixedHeight(45);
+    registerButton->setFixedHeight(50);
 
     layout->addWidget(regUsernameEdit);
     layout->addWidget(regPasswordEdit);
@@ -214,7 +214,7 @@ void LoginDialog::setupRegisterPage() {
     layout->addStretch();
 
     backToAuthButton2 = new QPushButton("← Back");
-    backToAuthButton2->setFixedSize(80, 30);
+    backToAuthButton2->setFixedSize(80, 50);
     QHBoxLayout *backLayout = new QHBoxLayout();
     backLayout->addWidget(backToAuthButton2);
     backLayout->addStretch();
@@ -232,7 +232,7 @@ void LoginDialog::setupPlayer2AuthTypePage() {
     player2AuthTypePage = new QWidget();
     QVBoxLayout *layout = new QVBoxLayout(player2AuthTypePage);
 
-    QLabel *titleLabel = new QLabel("Player 2 Authentication");
+    QLabel *titleLabel = new QLabel("Player 2 ");
     titleLabel->setAlignment(Qt::AlignCenter);
     titleLabel->setStyleSheet("font-size: 20px; font-weight: bold; color: #2c3e50; margin: 20px;");
     layout->addWidget(titleLabel);
@@ -278,15 +278,15 @@ void LoginDialog::setupPlayer2LoginPage() {
 
     player2UsernameEdit = new QLineEdit();
     player2UsernameEdit->setPlaceholderText("Username");
-    player2UsernameEdit->setFixedHeight(40);
+    player2UsernameEdit->setFixedHeight(50);
 
     player2PasswordEdit = new QLineEdit();
     player2PasswordEdit->setPlaceholderText("Password");
     player2PasswordEdit->setEchoMode(QLineEdit::Password);
-    player2PasswordEdit->setFixedHeight(40);
+    player2PasswordEdit->setFixedHeight(50);
 
     player2LoginButton = new QPushButton("Login");
-    player2LoginButton->setFixedHeight(45);
+    player2LoginButton->setFixedHeight(50);
 
     layout->addWidget(player2UsernameEdit);
     layout->addWidget(player2PasswordEdit);
@@ -295,7 +295,7 @@ void LoginDialog::setupPlayer2LoginPage() {
     layout->addStretch();
 
     backToPlayer2AuthButton = new QPushButton("← Back");
-    backToPlayer2AuthButton->setFixedSize(80, 30);
+    backToPlayer2AuthButton->setFixedSize(80, 50);
     QHBoxLayout *backLayout = new QHBoxLayout();
     backLayout->addWidget(backToPlayer2AuthButton);
     backLayout->addStretch();
@@ -322,20 +322,20 @@ void LoginDialog::setupPlayer2RegisterPage() {
 
     player2RegUsernameEdit = new QLineEdit();
     player2RegUsernameEdit->setPlaceholderText("Username");
-    player2RegUsernameEdit->setFixedHeight(40);
+    player2RegUsernameEdit->setFixedHeight(50);
 
     player2RegPasswordEdit = new QLineEdit();
     player2RegPasswordEdit->setPlaceholderText("Password");
     player2RegPasswordEdit->setEchoMode(QLineEdit::Password);
-    player2RegPasswordEdit->setFixedHeight(40);
+    player2RegPasswordEdit->setFixedHeight(50);
 
     player2RegConfirmPasswordEdit = new QLineEdit();
     player2RegConfirmPasswordEdit->setPlaceholderText("Confirm Password");
     player2RegConfirmPasswordEdit->setEchoMode(QLineEdit::Password);
-    player2RegConfirmPasswordEdit->setFixedHeight(40);
+    player2RegConfirmPasswordEdit->setFixedHeight(50);
 
     player2RegisterButton = new QPushButton("Sign Up");
-    player2RegisterButton->setFixedHeight(45);
+    player2RegisterButton->setFixedHeight(50);
 
     layout->addWidget(player2RegUsernameEdit);
     layout->addWidget(player2RegPasswordEdit);
@@ -345,7 +345,7 @@ void LoginDialog::setupPlayer2RegisterPage() {
     layout->addStretch();
 
     backToPlayer2AuthButton2 = new QPushButton("← Back");
-    backToPlayer2AuthButton2->setFixedSize(80, 30);
+    backToPlayer2AuthButton2->setFixedSize(80, 50);
     QHBoxLayout *backLayout = new QHBoxLayout();
     backLayout->addWidget(backToPlayer2AuthButton2);
     backLayout->addStretch();
@@ -406,7 +406,7 @@ void LoginDialog::applyStyles() {
 
     // Add quit button to mode selection page
     QPushButton *quitButton = new QPushButton("❌ Quit", modeSelectionPage);
-    quitButton->setFixedSize(80, 35);
+    quitButton->setFixedSize(80, 50);
     quitButton->setStyleSheet(
         "QPushButton {"
         "    background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, "
