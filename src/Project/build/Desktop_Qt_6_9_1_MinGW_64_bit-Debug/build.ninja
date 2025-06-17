@@ -97,14 +97,6 @@ build CMakeFiles/Project.dir/LoginDialog.cpp.obj: CXX_COMPILER__Project_unscanne
   OBJECT_DIR = CMakeFiles\Project.dir
   OBJECT_FILE_DIR = CMakeFiles\Project.dir
 
-build CMakeFiles/Project.dir/resultdialog.cpp.obj: CXX_COMPILER__Project_unscanned_Debug D$:/Z'/Github/Tic-Tac-Toe-Game/src/Project/resultdialog.cpp || cmake_object_order_depends_target_Project
-  DEFINES = -DMINGW_HAS_SECURE_API=1 -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NEEDS_QMAIN -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
-  DEP_FILE = CMakeFiles\Project.dir\resultdialog.cpp.obj.d
-  FLAGS = -DQT_QML_DEBUG -g -std=gnu++17 -fdiagnostics-color=always
-  INCLUDES = -I"D:/Z'/Github/Tic-Tac-Toe-Game/src/Project/build/Desktop_Qt_6_9_1_MinGW_64_bit-Debug/Project_autogen/include" -isystem C:/Qt/6.9.1/mingw_64/include/QtCore -isystem C:/Qt/6.9.1/mingw_64/include -isystem C:/Qt/6.9.1/mingw_64/mkspecs/win32-g++ -isystem C:/Qt/6.9.1/mingw_64/include/QtWidgets -isystem C:/Qt/6.9.1/mingw_64/include/QtGui
-  OBJECT_DIR = CMakeFiles\Project.dir
-  OBJECT_FILE_DIR = CMakeFiles\Project.dir
-
 build CMakeFiles/Project.dir/Project_autogen/EWIEGA46WW/qrc_resources.cpp.obj: CXX_COMPILER__Project_unscanned_Debug D$:/Z'/Github/Tic-Tac-Toe-Game/src/Project/build/Desktop_Qt_6_9_1_MinGW_64_bit-Debug/Project_autogen/EWIEGA46WW/qrc_resources.cpp || cmake_object_order_depends_target_Project
   DEFINES = -DMINGW_HAS_SECURE_API=1 -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NEEDS_QMAIN -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
   DEP_FILE = CMakeFiles\Project.dir\Project_autogen\EWIEGA46WW\qrc_resources.cpp.obj.d
@@ -121,7 +113,7 @@ build CMakeFiles/Project.dir/Project_autogen/EWIEGA46WW/qrc_resources.cpp.obj: C
 #############################################
 # Link the executable Project.exe
 
-build Project.exe: CXX_EXECUTABLE_LINKER__Project_Debug CMakeFiles/Project.dir/Project_autogen/mocs_compilation.cpp.obj CMakeFiles/Project.dir/main.cpp.obj CMakeFiles/Project.dir/mainwindow.cpp.obj CMakeFiles/Project.dir/Board.cpp.obj CMakeFiles/Project.dir/AIPlayer.cpp.obj CMakeFiles/Project.dir/LoginDialog.cpp.obj CMakeFiles/Project.dir/resultdialog.cpp.obj CMakeFiles/Project.dir/Project_autogen/EWIEGA46WW/qrc_resources.cpp.obj | C$:/Qt/6.9.1/mingw_64/lib/libQt6Widgets.a C$:/Qt/6.9.1/mingw_64/lib/libQt6Gui.a C$:/Qt/6.9.1/mingw_64/lib/libQt6Core.a C$:/Qt/6.9.1/mingw_64/lib/libQt6EntryPoint.a || Project_autogen Project_autogen_timestamp_deps
+build Project.exe: CXX_EXECUTABLE_LINKER__Project_Debug CMakeFiles/Project.dir/Project_autogen/mocs_compilation.cpp.obj CMakeFiles/Project.dir/main.cpp.obj CMakeFiles/Project.dir/mainwindow.cpp.obj CMakeFiles/Project.dir/Board.cpp.obj CMakeFiles/Project.dir/AIPlayer.cpp.obj CMakeFiles/Project.dir/LoginDialog.cpp.obj CMakeFiles/Project.dir/Project_autogen/EWIEGA46WW/qrc_resources.cpp.obj | C$:/Qt/6.9.1/mingw_64/lib/libQt6Widgets.a C$:/Qt/6.9.1/mingw_64/lib/libQt6Gui.a C$:/Qt/6.9.1/mingw_64/lib/libQt6Core.a C$:/Qt/6.9.1/mingw_64/lib/libQt6EntryPoint.a || Project_autogen Project_autogen_timestamp_deps
   FLAGS = -DQT_QML_DEBUG -g
   LINK_FLAGS = -mwindows
   LINK_LIBRARIES = C:/Qt/6.9.1/mingw_64/lib/libQt6Widgets.a  C:/Qt/6.9.1/mingw_64/lib/libQt6Gui.a  C:/Qt/6.9.1/mingw_64/lib/libQt6Core.a  -lmpr  -luserenv  -lmingw32  C:/Qt/6.9.1/mingw_64/lib/libQt6EntryPoint.a  -lshell32  -ld3d11  -ldxgi  -ldxguid  -ld3d12  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32

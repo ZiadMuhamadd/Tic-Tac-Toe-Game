@@ -355,12 +355,6 @@
 			"MU",
 			"EWIEGA46WW/moc_mainwindow.cpp",
 			null
-		],
-		[
-			"D:/Z'/Github/Tic-Tac-Toe-Game/src/Project/resultdialog.h",
-			"MU",
-			"EWIEGA46WW/moc_resultdialog.cpp",
-			null
 		]
 	],
 	"HEADER_EXTENSIONS" : [ "h", "hh", "h++", "hm", "hpp", "hxx", "in", "txx" ],
@@ -444,11 +438,6 @@
 		[ "D:/Z'/Github/Tic-Tac-Toe-Game/src/Project/main.cpp", "MU", null ],
 		[
 			"D:/Z'/Github/Tic-Tac-Toe-Game/src/Project/mainwindow.cpp",
-			"MU",
-			null
-		],
-		[
-			"D:/Z'/Github/Tic-Tac-Toe-Game/src/Project/resultdialog.cpp",
 			"MU",
 			null
 		]
