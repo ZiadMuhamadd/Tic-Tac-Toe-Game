@@ -489,7 +489,7 @@ void MainWindow::showGameOverDialog(const QString& result)
     gameOverDialog->setModal(true);
 
     // Set XOXO background
-    QPixmap xoxoBackground("glowing-xoxo-neon-typography-dark-purple-background.jpg"); // Change path
+    QPixmap xoxoBackground("D:/images/gameover_bg.jpg"); // Change path
     if (!xoxoBackground.isNull()) {
         xoxoBackground = xoxoBackground.scaled(gameOverDialog->size(),
                                                Qt::KeepAspectRatioByExpanding,
