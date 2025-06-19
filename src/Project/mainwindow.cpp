@@ -614,8 +614,470 @@ void MainWindow::onNewGameClicked()
 
 void MainWindow::onShowHistoryClicked()
 {
-    QMessageBox::information(this, "History", "Game history feature coming soon!");
+    showGameHistoryDialog();
 }
+
+void MainWindow::showGameHistoryDialog()
+{
+    QDialog* historyDialog = new QDialog(this);
+    historyDialog->setWindowTitle("Game History");
+    historyDialog->setFixedSize(800, 600);
+    historyDialog->setModal(true);
+
+    // Set background for history dialog
+    QPixmap historyBackground("game_bg.jpg");
+    if (!historyBackground.isNull()) {
+        historyBackground = historyBackground.scaled(historyDialog->size(),
+                                                     Qt::KeepAspectRatioByExpanding,
+                                                     Qt::SmoothTransformation);
+
+        QPalette palette;
+        palette.setBrush(QPalette::Window, historyBackground);
+        historyDialog->setPalette(palette);
+        historyDialog->setAutoFillBackground(true);
+    }
+
+    QVBoxLayout* mainLayout = new QVBoxLayout(historyDialog);
+    mainLayout->setSpacing(15);
+    mainLayout->setContentsMargins(20, 20, 20, 20);
+
+    // Title
+    QLabel* titleLabel = new QLabel(QString("📊 %1's Game History").arg(player1Name), historyDialog);
+    titleLabel->setAlignment(Qt::AlignCenter);
+    titleLabel->setStyleSheet(R"(
+        QLabel {
+            color: #00FFFF;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 0 0 15px #00FFFF;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00FFFF;
+            border-radius: 15px;
+            padding: 15px;
+            margin: 10px;
+        }
+    )");
+
+    // Games list
+    QListWidget* gamesList = new QListWidget(historyDialog);
+    gamesList->setStyleSheet(R"(
+        QListWidget {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            border: 2px solid #8A2BE2;
+            border-radius: 10px;
+            font-size: 14px;
+            padding: 10px;
+        }
+        QListWidget::item {
+            background: rgba(75, 0, 130, 0.6);
+            border: 1px solid #9370DB;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 3px;
+        }
+        QListWidget::item:selected {
+            background: rgba(138, 43, 226, 0.8);
+            border: 2px solid #FF1493;
+        }
+        QListWidget::item:hover {
+            background: rgba(106, 90, 205, 0.7);
+            border: 1px solid #BA55D3;
+        }
+    )");
+
+    // Load game history
+    QFile file("game_history.json");
+    QJsonArray userGames;
+
+    if (file.open(QIODevice::ReadOnly)) {
+        QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+        QJsonObject history = doc.object();
+        file.close();
+
+        if (history.contains(player1Name)) {
+            userGames = history[player1Name].toArray();
+        }
+    }
+
+    // Populate games list
+    for (int i = 0; i < userGames.size(); ++i) {
+        QJsonObject gameData = userGames[i].toObject();
+        QString winner = gameData["winner"].toString();
+        QString mode = gameData["mode"].toString();
+        QString opponent = gameData["opponent"].toString();
+        QJsonArray moves = gameData["moves"].toArray();
+
+        QString resultText;
+        if (winner == "T") {
+            resultText = "🤝 Tie";
+        } else if (winner == "X") {
+            resultText = QString("🎉 %1 Won").arg(player1Name);
+        } else {
+            if (mode == "PvAI") {
+                resultText = "🤖 AI Won";
+            } else {
+                resultText = QString("🎉 %1 Won").arg(opponent);
+            }
+        }
+
+        QString modeText = (mode == "PvP") ? "Player vs Player" : "Player vs AI";
+        QString itemText = QString("Game #%1 | %2 | %3 vs %4 | %5 moves | %6")
+                               .arg(i + 1)
+                               .arg(resultText)
+                               .arg(player1Name)
+                               .arg(opponent)
+                               .arg(moves.size())
+                               .arg(modeText);
+
+        QListWidgetItem* item = new QListWidgetItem(itemText);
+        item->setData(Qt::UserRole, gameData);
+        gamesList->addItem(item);
+    }
+
+    // Buttons layout
+    QHBoxLayout* buttonLayout = new QHBoxLayout();
+
+    QPushButton* replayButton = new QPushButton("🎬 Replay Game", historyDialog);
+    QPushButton* deleteButton = new QPushButton("🗑️ Delete Game", historyDialog);
+    QPushButton* clearAllButton = new QPushButton("🧹 Clear All", historyDialog);
+    QPushButton* closeButton = new QPushButton("✕ Close", historyDialog);
+
+    QString buttonStyle = R"(
+        QPushButton {
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                stop:0 rgba(138, 43, 226, 0.9),
+                stop:1 rgba(255, 20, 147, 0.9));
+            color: white;
+            border: 2px solid #FF1493;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            padding: 10px 20px;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+        }
+        QPushButton:hover {
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                stop:0 rgba(255, 20, 147, 1.0),
+                stop:1 rgba(138, 43, 226, 1.0));
+            border: 2px solid #00FFFF;
+            text-shadow: 0 0 12px #00FFFF;
+        }
+        QPushButton:pressed {
+            background: rgba(75, 0, 130, 0.9);
+            border: 2px solid #8A2BE2;
+        }
+        QPushButton:disabled {
+            background: rgba(64, 64, 64, 0.5);
+            color: rgba(255, 255, 255, 0.5);
+            border: 2px solid rgba(128, 128, 128, 0.5);
+        }
+    )";
+
+    replayButton->setStyleSheet(buttonStyle);
+    deleteButton->setStyleSheet(buttonStyle);
+    clearAllButton->setStyleSheet(buttonStyle);
+    closeButton->setStyleSheet(buttonStyle);
+
+    // Initially disable buttons
+    replayButton->setEnabled(false);
+    deleteButton->setEnabled(false);
+    clearAllButton->setEnabled(userGames.size() > 0);
+
+    buttonLayout->addWidget(replayButton);
+    buttonLayout->addWidget(deleteButton);
+    buttonLayout->addStretch();
+    buttonLayout->addWidget(clearAllButton);
+    buttonLayout->addWidget(closeButton);
+
+    // Stats label
+    QLabel* statsLabel = new QLabel(historyDialog);
+    if (userGames.size() == 0) {
+        statsLabel->setText("📈 No games played yet. Start playing to build your history!");
+    } else {
+        int wins = 0, losses = 0, ties = 0;
+        for (int i = 0; i < userGames.size(); ++i) {
+            QString winner = userGames[i].toObject()["winner"].toString();
+            if (winner == "X") wins++;
+            else if (winner == "O") losses++;
+            else ties++;
+        }
+
+        statsLabel->setText(QString("📈 Stats: %1 Wins | %2 Losses | %3 Ties | Total: %4 games")
+                                .arg(wins).arg(losses).arg(ties).arg(userGames.size()));
+    }
+
+    statsLabel->setStyleSheet(R"(
+        QLabel {
+            color: #FFD700;
+            font-size: 16px;
+            font-weight: bold;
+            text-shadow: 0 0 10px #FFD700;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #FFD700;
+            border-radius: 10px;
+            padding: 10px;
+            margin: 5px;
+        }
+    )");
+
+    // Add widgets to layout
+    mainLayout->addWidget(titleLabel);
+    mainLayout->addWidget(statsLabel);
+    mainLayout->addWidget(gamesList, 1);
+    mainLayout->addLayout(buttonLayout);
+
+    // Connect signals
+    connect(gamesList, &QListWidget::itemSelectionChanged, [=]() {
+        bool hasSelection = gamesList->currentItem() != nullptr;
+        replayButton->setEnabled(hasSelection);
+        deleteButton->setEnabled(hasSelection);
+    });
+
+    connect(replayButton, &QPushButton::clicked, [=]() {
+        QListWidgetItem* item = gamesList->currentItem();
+        if (item) {
+            QJsonObject gameData = item->data(Qt::UserRole).toJsonObject();
+            historyDialog->accept();
+            replayGame(gameData);
+        }
+    });
+
+    connect(deleteButton, &QPushButton::clicked, [=]() {
+        QListWidgetItem* item = gamesList->currentItem();
+        if (item) {
+            int ret = QMessageBox::question(historyDialog, "Delete Game",
+                                            "Are you sure you want to delete this game?",
+                                            QMessageBox::Yes | QMessageBox::No);
+            if (ret == QMessageBox::Yes) {
+                int row = gamesList->row(item);
+                deleteGameFromHistory(row);
+                historyDialog->accept();
+                showGameHistoryDialog(); // Refresh the dialog
+            }
+        }
+    });
+
+    connect(clearAllButton, &QPushButton::clicked, [=]() {
+        int ret = QMessageBox::question(historyDialog, "Clear All History",
+                                        "Are you sure you want to delete ALL game history?",
+                                        QMessageBox::Yes | QMessageBox::No);
+        if (ret == QMessageBox::Yes) {
+            // Clear all history for current user
+            QFile file("game_history.json");
+            QJsonObject history;
+
+            if (file.open(QIODevice::ReadOnly)) {
+                QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+                history = doc.object();
+                file.close();
+            }
+
+            history.remove(player1Name);
+
+            if (file.open(QIODevice::WriteOnly)) {
+                QJsonDocument doc(history);
+                file.write(doc.toJson());
+                file.close();
+            }
+
+            historyDialog->accept();
+            QMessageBox::information(this, "History Cleared", "All game history has been cleared!");
+        }
+    });
+
+    connect(closeButton, &QPushButton::clicked, historyDialog, &QDialog::accept);
+
+    historyDialog->exec();
+    delete historyDialog;
+}
+
+void MainWindow::replayGame(const QJsonObject& gameData)
+{
+    // Reset the game board
+    resetGame();
+
+    QJsonArray moves = gameData["moves"].toArray();
+    QString mode = gameData["mode"].toString();
+    QString opponent = gameData["opponent"].toString();
+
+    // Create replay dialog
+    QDialog* replayDialog = new QDialog(this);
+    replayDialog->setWindowTitle("Game Replay");
+    replayDialog->setFixedSize(400, 300);
+    replayDialog->setModal(true);
+
+    // Set background
+    QPixmap replayBackground("glowing-xoxo-neon-typography-dark-purple-background.jpg");
+    if (!replayBackground.isNull()) {
+        replayBackground = replayBackground.scaled(replayDialog->size(),
+                                                   Qt::KeepAspectRatioByExpanding,
+                                                   Qt::SmoothTransformation);
+
+        QPalette palette;
+        palette.setBrush(QPalette::Window, replayBackground);
+        replayDialog->setPalette(palette);
+        replayDialog->setAutoFillBackground(true);
+    }
+
+    QVBoxLayout* layout = new QVBoxLayout(replayDialog);
+    layout->setSpacing(20);
+    layout->setContentsMargins(30, 30, 30, 30);
+
+    QLabel* titleLabel = new QLabel("🎬 Game Replay", replayDialog);
+    titleLabel->setAlignment(Qt::AlignCenter);
+
+    QLabel* infoLabel = new QLabel(QString("Replaying: %1 vs %2\nTotal moves: %3")
+                                       .arg(player1Name)
+                                       .arg(opponent)
+                                       .arg(moves.size()), replayDialog);
+    infoLabel->setAlignment(Qt::AlignCenter);
+
+    QLabel* moveLabel = new QLabel("Press 'Next' to see each move", replayDialog);
+    moveLabel->setAlignment(Qt::AlignCenter);
+
+    QString labelStyle = R"(
+        QLabel {
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            text-shadow: 0 0 15px #FF1493;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #FF1493;
+            border-radius: 12px;
+            padding: 15px;
+        }
+    )";
+
+    titleLabel->setStyleSheet(labelStyle);
+    infoLabel->setStyleSheet(labelStyle);
+    moveLabel->setStyleSheet(labelStyle);
+
+    QHBoxLayout* buttonLayout = new QHBoxLayout();
+    QPushButton* nextButton = new QPushButton("▶️ Next Move", replayDialog);
+    QPushButton* autoButton = new QPushButton("⏩ Auto Play", replayDialog);
+    QPushButton* closeButton = new QPushButton("✕ Close", replayDialog);
+
+    QString buttonStyle = R"(
+        QPushButton {
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                stop:0 rgba(255, 20, 147, 0.9),
+                stop:1 rgba(138, 43, 226, 0.9));
+            color: white;
+            border: 2px solid #FF1493;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            padding: 10px 15px;
+        }
+        QPushButton:hover {
+            border: 2px solid #00FFFF;
+            text-shadow: 0 0 10px #00FFFF;
+        }
+    )";
+
+    nextButton->setStyleSheet(buttonStyle);
+    autoButton->setStyleSheet(buttonStyle);
+    closeButton->setStyleSheet(buttonStyle);
+
+    buttonLayout->addWidget(nextButton);
+    buttonLayout->addWidget(autoButton);
+    buttonLayout->addStretch();
+    buttonLayout->addWidget(closeButton);
+
+    layout->addWidget(titleLabel);
+    layout->addWidget(infoLabel);
+    layout->addWidget(moveLabel);
+    layout->addLayout(buttonLayout);
+
+    int currentMoveIndex = 0;
+    QTimer* autoTimer = new QTimer(replayDialog);
+    autoTimer->setSingleShot(false);
+    autoTimer->setInterval(1500); // 1.5 seconds between moves
+
+    auto playNextMove = [=]() mutable {
+        if (currentMoveIndex < moves.size()) {
+            QString move = moves[currentMoveIndex].toString();
+            char player = move[0].toLatin1();
+            int row = move[1].digitValue();
+            int col = move[2].digitValue();
+
+            // Make the move on the board
+            board->makeMove(row, col, player);
+            gameButtons[row][col]->setText(QString(player));
+
+            // Apply color styling
+            if (player == 'X') {
+                gameButtons[row][col]->setStyleSheet(gameButtons[row][col]->styleSheet() +
+                                                     " color: #FF1493; text-shadow: 0 0 15px #FF1493;");
+            } else {
+                gameButtons[row][col]->setStyleSheet(gameButtons[row][col]->styleSheet() +
+                                                     " color: #00FFFF; text-shadow: 0 0 15px #00FFFF;");
+            }
+
+            currentMoveIndex++;
+            moveLabel->setText(QString("Move %1/%2: Player %3 at (%4,%5)")
+                                   .arg(currentMoveIndex)
+                                   .arg(moves.size())
+                                   .arg(player)
+                                   .arg(row + 1)
+                                   .arg(col + 1));
+
+            if (currentMoveIndex >= moves.size()) {
+                nextButton->setEnabled(false);
+                autoTimer->stop();
+                autoButton->setText("✅ Replay Complete");
+                autoButton->setEnabled(false);
+            }
+        }
+    };
+
+    connect(nextButton, &QPushButton::clicked, playNextMove);
+
+    connect(autoButton, &QPushButton::clicked, [=]() mutable {
+        if (autoTimer->isActive()) {
+            autoTimer->stop();
+            autoButton->setText("⏩ Auto Play");
+        } else {
+            autoTimer->start();
+            autoButton->setText("⏸️ Pause");
+        }
+    });
+
+    connect(autoTimer, &QTimer::timeout, playNextMove);
+    connect(closeButton, &QPushButton::clicked, replayDialog, &QDialog::accept);
+
+    replayDialog->exec();
+    delete replayDialog;
+}
+
+void MainWindow::deleteGameFromHistory(int gameIndex)
+{
+    QFile file("game_history.json");
+    QJsonObject history;
+
+    if (file.open(QIODevice::ReadOnly)) {
+        QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+        history = doc.object();
+        file.close();
+    }
+
+    if (history.contains(player1Name)) {
+        QJsonArray userGames = history[player1Name].toArray();
+
+        if (gameIndex >= 0 && gameIndex < userGames.size()) {
+            userGames.removeAt(gameIndex);
+            history[player1Name] = userGames;
+
+            if (file.open(QIODevice::WriteOnly)) {
+                QJsonDocument doc(history);
+                file.write(doc.toJson());
+                file.close();
+            }
+        }
+    }
+}
+
 
 void MainWindow::onLogoutClicked()
 {

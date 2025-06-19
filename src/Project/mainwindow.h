@@ -10,6 +10,8 @@
 #include <QAction>
 #include <QMessageBox>
 #include <QDialog>
+#include <QListWidget>          // Add this line
+#include <QListWidgetItem>      // Add this line
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
@@ -55,7 +57,10 @@ private:
     void checkGameEnd();
     void saveGameHistory(const QString& winner);
     void showGameOverDialog(const QString& result);
-    void animateButton(QPushButton* button);  // Declaration added here
+    void animateButton(QPushButton* button);
+    void showGameHistoryDialog();        // Add this line
+    void replayGame(const QJsonObject& gameData);  // Add this line
+    void deleteGameFromHistory(int gameIndex);     // Add this line
 
     // UI Components
     QWidget* centralWidget;
