@@ -625,7 +625,7 @@ void MainWindow::showGameHistoryDialog()
     historyDialog->setModal(true);
 
     // Set background for history dialog
-    QPixmap historyBackground("game_bg.jpg");
+    QPixmap historyBackground("D:/images/gameover_bg.jpg");
     if (!historyBackground.isNull()) {
         historyBackground = historyBackground.scaled(historyDialog->size(),
                                                      Qt::KeepAspectRatioByExpanding,
@@ -687,7 +687,7 @@ void MainWindow::showGameHistoryDialog()
     )");
 
     // Load game history
-    QFile file("game_history.json");
+    QFile file("D:/images/gameover_bg.jpg");
     QJsonArray userGames;
 
     if (file.open(QIODevice::ReadOnly)) {
@@ -908,7 +908,7 @@ void MainWindow::replayGame(const QJsonObject& gameData)
     replayDialog->setModal(true);
 
     // Set background
-    QPixmap replayBackground("glowing-xoxo-neon-typography-dark-purple-background.jpg");
+    QPixmap replayBackground("D:/images/gameover_bg.jpg");
     if (!replayBackground.isNull()) {
         replayBackground = replayBackground.scaled(replayDialog->size(),
                                                    Qt::KeepAspectRatioByExpanding,
