@@ -4,66 +4,83 @@
 #include <QMainWindow>
 #include <QGridLayout>
 #include <QVBoxLayout>
-#include <QHBoxLayout>
 #include <QPushButton>
-#include <QComboBox>
 #include <QLabel>
-#include <QListWidget>
 #include <QToolBar>
 #include <QAction>
+#include <QMessageBox>
+#include <QDialog>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QFile>
+#include <QTimer>
+#include <QPixmap>
+#include <QPalette>
+#include <QResizeEvent>
+#include <QApplication>
+#include <QPropertyAnimation>
+#include <QRect>
 #include "Board.h"
 #include "AIPlayer.h"
-#include "LoginDialog.h"
 
-QT_BEGIN_NAMESPACE
-namespace Ui { class MainWindow; }
-QT_END_NAMESPACE
-
-class MainWindow : public QMainWindow {
+class MainWindow : public QMainWindow
+{
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    explicit MainWindow(QWidget *parent = nullptr);
+    ~MainWindow() = default;
+
+    void setPlayers(const QString& p1, const QString& p2, const QString& mode);
+
+protected:
+    void resizeEvent(QResizeEvent* event) override;
 
 private slots:
-    void handleButtonClick();
-    void handleModeChange(int index);
-    void resetGame();
-    void handleHistoryClick(QListWidgetItem *item);
-    void showGameHistory();
-    void startNewGame();
-    void logout(); // New logout slot
+    void onGameButtonClicked();
+    void onNewGameClicked();
+    void onShowHistoryClicked();
+    void onLogoutClicked();
+    void makeAIMove();
 
 private:
-    Ui::MainWindow *ui;
-    QPushButton* buttons[3][3];
-    QComboBox* modeSelector;
-    QLabel* statusLabel;
-    QLabel* statusLabel1;
-    QLabel* userLabel;
-    QListWidget* historyList;
-    QToolBar* mainToolBar;
-    QAction* historyAction;
-    QAction* newGameAction;
-    QAction* logoutAction; // New logout action
-
-    Board board;
-    AIPlayer ai;
-    char currentPlayer;
-    int mode;
-    bool gameOver;
-    QString currentUser;
-    QString player2User; // For two-player mode
-    QVector<QString> moveHistory;
-
-    void updateButton(int row, int col);
-    void makeAIMove();
-    void updateStatus();
     void setupUI();
-    void disableBoard();
-    void authenticateUser();
-    void saveGameRecord(QString winner);
-    void loadGameHistory();
+    void setupStyling();
+    void setBackgroundImage();
+    void setupGameGrid();
+    void setupToolbar();
+    void resetGame();
+    void updateGameStatus();
+    void checkGameEnd();
+    void saveGameHistory(const QString& winner);
+    void showGameOverDialog(const QString& result);
+    void animateButton(QPushButton* button);  // Declaration added here
+
+    // UI Components
+    QWidget* centralWidget;
+    QVBoxLayout* mainLayout;
+    QLabel* titleLabel;
+    QLabel* statusLabel;
+    QLabel* playersLabel;
+    QGridLayout* gameGridLayout;
+    QWidget* gameGridWidget;
+    QPushButton* gameButtons[3][3];
+    QToolBar* toolBar;
+    QAction* newGameAction;
+    QAction* historyAction;
+    QAction* logoutAction;
+
+    // Game Logic
+    Board* board;
+    AIPlayer* aiPlayer;
+    QString currentPlayer;
+    QString player1Name;
+    QString player2Name;
+    QString gameMode;
+    bool gameActive;
+    QStringList moveHistory;
+    QTimer* aiTimer;
 };
 
 #endif // MAINWINDOW_H

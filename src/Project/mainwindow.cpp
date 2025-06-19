@@ -1,514 +1,657 @@
-#include "mainwindow.h"
+#include "MainWindow.h"
 #include "LoginDialog.h"
-#include <QApplication>
-#include <QWidget>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QGridLayout>
-#include <QPushButton>
-#include <QComboBox>
-#include <QLabel>
-#include <QListWidget>
-#include <QToolBar>
-#include <QAction>
-#include <QMessageBox>
-#include <QCryptographicHash>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QFile>
-#include <QDialog>
-#include <QFont>
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), currentPlayer('X'), mode(1), gameOver(false) {
-    authenticateUser();
+    : QMainWindow(parent), currentPlayer("X"), gameActive(true)
+{
+    setWindowTitle("Tic Tac Toe - Synthwave Edition");
+    setMinimumSize(800, 900);
+    resize(1000, 1100);
+
+    board = new Board();
+    aiPlayer = new AIPlayer();
+    aiTimer = new QTimer(this);
+    aiTimer->setSingleShot(true);
+
     setupUI();
-    resetGame();
+    setBackgroundImage();
+    setupStyling();
+    setupToolbar();
+
+    connect(aiTimer, &QTimer::timeout, this, &MainWindow::makeAIMove);
 }
+void MainWindow::setupUI()
+{
+    centralWidget = new QWidget(this);
+    setCentralWidget(centralWidget);
 
-void MainWindow::authenticateUser() {
-    bool authenticated = false;
-    while (!authenticated) {
-        LoginDialog login(this);
-        if (login.exec() == QDialog::Accepted) {
-            currentUser = login.getUsername();
-            mode = login.getSelectedMode();
+    // Create main horizontal layout
+    QHBoxLayout* mainHorizontalLayout = new QHBoxLayout(centralWidget);
+    mainHorizontalLayout->setSpacing(20);
+    mainHorizontalLayout->setContentsMargins(20, 20, 20, 20);
 
-            if (mode == 1) {
-                // Two players mode
-                player2User = login.getPlayer2Username();
-            }
+    // Create left panel for banners
+    QWidget* leftPanel = new QWidget(this);
+    leftPanel->setObjectName("leftPanel");
+    leftPanel->setFixedWidth(350);  // Fixed width for left panel
+    leftPanel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
 
-            authenticated = true;
-        } else {
-            exit(0);
-        }
-    }
-}
+    QVBoxLayout* leftLayout = new QVBoxLayout(leftPanel);
+    leftLayout->setSpacing(15);
+    leftLayout->setContentsMargins(10, 10, 10, 10);
 
-void MainWindow::setupUI() {
-    QWidget *central = new QWidget(this);
-    QVBoxLayout *mainLayout = new QVBoxLayout(central);
+    // Title (more square-shaped)
+    titleLabel = new QLabel("🎮 TIC TAC TOE 🎮", this);
+    titleLabel->setAlignment(Qt::AlignCenter);
+    titleLabel->setObjectName("titleLabel");
+    titleLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 
-    // Apply beautiful background gradient
-    central->setStyleSheet(
-        "QWidget {"
-        "    background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, "
-        "    stop:0 #ffecd2, stop:0.5 #fcb69f, stop:1 #f093fb);"
-        "}"
-        );
+    // Players info (more square-shaped)
+    playersLabel = new QLabel(this);
+    playersLabel->setAlignment(Qt::AlignCenter);
+    playersLabel->setObjectName("playersLabel");
+    playersLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 
-    mainToolBar = addToolBar("Main Toolbar");
-    mainToolBar->setStyleSheet(
-        "QToolBar {"
-        "    background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, "
-        "    stop:0 #667eea, stop:1 #764ba2);"
-        "    border: none;"
-        "    spacing: 10px;"
-        "}"
-        "QAction {"
-        "    color: white;"
-        "    font-weight: bold;"
-        "    padding: 8px 16px;"
-        "    margin: 4px;"
-        "}"
-        );
-
-    historyAction = new QAction("🎮 Game History", this);
-    newGameAction = new QAction("🎯 New Game", this);
-    logoutAction = new QAction("🚪 Logout", this); // New logout action
-
-    mainToolBar->addAction(historyAction);
-    mainToolBar->addAction(newGameAction);
-    mainToolBar->addSeparator();
-    mainToolBar->addAction(logoutAction);
-
-    connect(historyAction, &QAction::triggered, this, &MainWindow::showGameHistory);
-    connect(newGameAction, &QAction::triggered, this, &MainWindow::startNewGame);
-    connect(logoutAction, &QAction::triggered, this, &MainWindow::logout);
-
-    QFont headerFont;
-    headerFont.setPointSize(24);
-    headerFont.setBold(true);
-
-    statusLabel1 = new QLabel("🎲 Welcome to Tic Tac Toe 🎲", this);
-    statusLabel1->setFont(headerFont);
-    statusLabel1->setAlignment(Qt::AlignCenter);
-    statusLabel1->setStyleSheet(
-        "color: #2c3e50;"
-        "background: rgba(255, 255, 255, 0.8);"
-        "border-radius: 15px;"
-        "padding: 15px;"
-        "margin: 10px;"
-        );
-    mainLayout->addWidget(statusLabel1);
-
-    QString userText;
-    if (mode == 1) {
-        userText = QString("👥 Players: %1 vs %2").arg(currentUser).arg(player2User);
-    } else {
-        userText = QString("🤖 Player: %1 vs AI").arg(currentUser);
-    }
-
-    userLabel = new QLabel(userText, this);
-    userLabel->setAlignment(Qt::AlignCenter);
-    userLabel->setStyleSheet(
-        "font-size: 16px;"
-        "color: #34495e;"
-        "background: rgba(255, 255, 255, 0.7);"
-        "border-radius: 10px;"
-        "padding: 10px;"
-        "margin: 5px;"
-        );
-    mainLayout->addWidget(userLabel);
-
-    QFont statusFont;
-    statusFont.setPointSize(18);
-    statusFont.setBold(true);
-
-    statusLabel = new QLabel("Player X's turn", this);
-    statusLabel->setFont(statusFont);
+    // Status (more square-shaped)
+    statusLabel = new QLabel("Player X's Turn", this);
     statusLabel->setAlignment(Qt::AlignCenter);
-    statusLabel->setStyleSheet(
-        "color: #e74c3c;"
-        "background: rgba(255, 255, 255, 0.9);"
-        "border-radius: 12px;"
-        "padding: 12px;"
-        "margin: 10px;"
-        );
-    mainLayout->addWidget(statusLabel);
+    statusLabel->setObjectName("statusLabel");
+    statusLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 
-    QGridLayout *grid = new QGridLayout();
-    grid->setSpacing(8);
+    // Add banners to left panel
+    leftLayout->addWidget(titleLabel);
+    leftLayout->addWidget(playersLabel);
+    leftLayout->addWidget(statusLabel);
+    leftLayout->addStretch();  // Push banners to top
 
-    QFont buttonFont;
-    buttonFont.setPointSize(36);
-    buttonFont.setBold(true);
+    // Create right panel for game grid
+    QWidget* rightPanel = new QWidget(this);
+    rightPanel->setObjectName("rightPanel");
+    rightPanel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+    QVBoxLayout* rightLayout = new QVBoxLayout(rightPanel);
+    rightLayout->setContentsMargins(20, 20, 20, 20);
+
+    // Game grid
+    setupGameGrid();
+
+    // Center the grid vertically and horizontally in right panel
+    QHBoxLayout* gridCenterLayout = new QHBoxLayout();
+    gridCenterLayout->addStretch();
+    gridCenterLayout->addWidget(gameGridWidget);
+    gridCenterLayout->addStretch();
+
+    rightLayout->addStretch();
+    rightLayout->addLayout(gridCenterLayout);
+    rightLayout->addStretch();
+
+    // Add panels to main layout
+    mainHorizontalLayout->addWidget(leftPanel);
+    mainHorizontalLayout->addWidget(rightPanel);
+}
+
+void MainWindow::setupGameGrid()
+{
+    gameGridWidget = new QWidget(this);
+    gameGridWidget->setObjectName("gameGridWidget");
+
+    // Now we can make the grid much larger since we have more vertical space
+    gameGridWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    gameGridWidget->setMinimumSize(500, 500);  // Larger minimum size
+    gameGridWidget->setMaximumSize(800, 800);  // Much larger maximum size
+
+    gameGridLayout = new QGridLayout(gameGridWidget);
+    gameGridLayout->setSpacing(20);  // Increased spacing
+    gameGridLayout->setContentsMargins(30, 30, 30, 30);
 
     for (int i = 0; i < 3; ++i) {
         for (int j = 0; j < 3; ++j) {
-            buttons[i][j] = new QPushButton(" ", this);
-            buttons[i][j]->setFixedSize(120, 120);
-            buttons[i][j]->setFont(buttonFont);
-            buttons[i][j]->setStyleSheet(
-                "QPushButton {"
-                "    background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, "
-                "    stop:0 #ffffff, stop:1 #f8f9fa);"
-                "    border: 3px solid #3498db;"
-                "    border-radius: 15px;"
-                "    color: #2c3e50;"
-                "}"
-                "QPushButton:hover {"
-                "    background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, "
-                "    stop:0 #e3f2fd, stop:1 #bbdefb);"
-                "    border: 3px solid #2196f3;"
-                "}"
-                "QPushButton:pressed {"
-                "    background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, "
-                "    stop:0 #1976d2, stop:1 #1565c0);"
-                "    color: white;"
-                "}"
-                );
+            gameButtons[i][j] = new QPushButton("", this);
+            gameButtons[i][j]->setObjectName("gameButton");
 
-            grid->addWidget(buttons[i][j], i, j);
-            buttons[i][j]->setProperty("row", i);
-            buttons[i][j]->setProperty("col", j);
-            connect(buttons[i][j], &QPushButton::clicked, this, &MainWindow::handleButtonClick);
+            // Can make buttons larger now with more space
+            gameButtons[i][j]->setMinimumSize(140, 140);  // Larger buttons
+            gameButtons[i][j]->setMaximumSize(200, 200);  // Larger maximum
+
+            gameButtons[i][j]->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+
+            gameButtons[i][j]->setProperty("row", i);
+            gameButtons[i][j]->setProperty("col", j);
+
+            connect(gameButtons[i][j], &QPushButton::clicked, this, &MainWindow::onGameButtonClicked);
+
+            gameGridLayout->addWidget(gameButtons[i][j], i, j);
         }
     }
 
-    QWidget *gridWidget = new QWidget();
-    gridWidget->setLayout(grid);
-    gridWidget->setStyleSheet(
-        "QWidget {"
-        "    background: rgba(255, 255, 255, 0.1);"
-        "    border-radius: 20px;"
-        "    padding: 20px;"
-        "    margin: 10px;"
-        "}"
-        );
-
-    mainLayout->addWidget(gridWidget);
-    setCentralWidget(central);
-}
-
-void MainWindow::logout() {
-    // Ask for confirmation
-    QMessageBox::StandardButton reply = QMessageBox::question(
-        this,
-        "Logout Confirmation",
-        "Are you sure you want to logout? Your current game will be lost.",
-        QMessageBox::Yes | QMessageBox::No
-        );
-
-    if (reply == QMessageBox::Yes) {
-        // Clear current user data
-        currentUser.clear();
-        player2User.clear();
-
-        // Hide main window
-        this->hide();
-
-        // Show login dialog again
-        authenticateUser();
-
-        // Update UI with new user data
-        setupUI();
-        resetGame();
-
-        // Show main window again
-        this->show();
+    for (int i = 0; i < 3; ++i) {
+        gameGridLayout->setRowStretch(i, 1);
+        gameGridLayout->setColumnStretch(i, 1);
     }
 }
 
-void MainWindow::resetGame() {
-    board = Board();
-    currentPlayer = 'X';
-    gameOver = false;
+void MainWindow::setupStyling()
+{
+    QString style = R"(
+        QMainWindow {
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        #leftPanel {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid #8A2BE2;
+            border-radius: 15px;
+        }
+
+        #rightPanel {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        #titleLabel {
+            color: #00FFFF;
+            font-size: 20px;  /* Adjusted for square format */
+            font-weight: bold;
+            text-shadow: 0 0 15px #00FFFF, 0 0 20px #00FFFF;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00FFFF;
+            border-radius: 15px;
+            padding: 20px;  /* More square padding */
+            margin: 5px;
+            min-height: 60px;  /* Square-ish height */
+        }
+
+        #playersLabel {
+            color: #FF1493;
+            font-size: 16px;  /* Adjusted for square format */
+            font-weight: bold;
+            text-shadow: 0 0 8px #FF1493;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #FF1493;
+            border-radius: 15px;
+            padding: 20px;  /* More square padding */
+            margin: 5px;
+            min-height: 60px;  /* Square-ish height */
+        }
+
+        #statusLabel {
+            color: #00FFFF;
+            font-size: 18px;  /* Adjusted for square format */
+            font-weight: bold;
+            text-shadow: 0 0 10px #00FFFF;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00FFFF;
+            border-radius: 15px;
+            padding: 20px;  /* More square padding */
+            margin: 5px;
+            min-height: 60px;  /* Square-ish height */
+        }
+
+        #gameGridWidget {
+            background: rgba(0, 0, 0, 0.6);
+            border: 4px solid #8A2BE2;  /* Thicker border for prominence */
+            border-radius: 25px;
+        }
+
+        #gameButton {
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                stop:0 rgba(0, 0, 0, 0.8),
+                stop:1 rgba(75, 0, 130, 0.6));
+            border: 3px solid #00FFFF;
+            border-radius: 15px;
+            color: white;
+            font-size: 56px;  /* Larger font for bigger buttons */
+            font-weight: bold;
+            text-shadow: 0 0 15px currentColor;
+        }
+
+        #gameButton:hover {
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                stop:0 rgba(255, 20, 147, 0.4),
+                stop:1 rgba(138, 43, 226, 0.4));
+            border: 4px solid #FF1493;  /* Thicker hover border */
+            text-shadow: 0 0 25px currentColor;
+        }
+
+        #gameButton:pressed {
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                stop:0 rgba(138, 43, 226, 0.8),
+                stop:1 rgba(75, 0, 130, 0.8));
+            border: 3px solid #8A2BE2;
+        }
+
+        QToolBar {
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                stop:0 rgba(138, 43, 226, 0.9),
+                stop:0.5 rgba(255, 20, 147, 0.9),
+                stop:1 rgba(138, 43, 226, 0.9));
+            border: none;
+            spacing: 15px;
+            padding: 8px;
+        }
+
+        QToolButton {
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: 2px solid #00FFFF;
+            border-radius: 8px;
+            padding: 8px 15px;
+            font-weight: bold;
+            font-size: 12px;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+        }
+
+        QToolButton:hover {
+            background: rgba(255, 20, 147, 0.8);
+            border: 2px solid #FF1493;
+            text-shadow: 0 0 10px #FF1493;
+        }
+
+        QToolButton:pressed {
+            background: rgba(138, 43, 226, 0.8);
+            border: 2px solid #8A2BE2;
+        }
+
+        QStatusBar {
+            background: rgba(0, 0, 0, 0.8);
+            color: #00FFFF;
+            border-top: 2px solid #00FFFF;
+        }
+    )";
+
+    this->setStyleSheet(style);
+}
+
+
+
+void MainWindow::setBackgroundImage()
+{
+    QPixmap gameBackground("D:/images/game_bg.jpg"); // Change this path to your image location
+
+    if (!gameBackground.isNull()) {
+        gameBackground = gameBackground.scaled(this->size(),
+                                               Qt::KeepAspectRatioByExpanding,
+                                               Qt::SmoothTransformation);
+
+        QPalette palette;
+        palette.setBrush(QPalette::Window, gameBackground);
+        this->setPalette(palette);
+        this->setAutoFillBackground(true);
+    }
+}
+
+
+
+void MainWindow::setupToolbar()
+{
+    toolBar = addToolBar("Game Controls");
+    toolBar->setMovable(false);
+    toolBar->setFloatable(false);
+
+    newGameAction = new QAction("🎯 New Game", this);
+    historyAction = new QAction("📊 History", this);
+    logoutAction = new QAction("🚪 Logout", this);
+
+    toolBar->addAction(newGameAction);
+    toolBar->addSeparator();
+    toolBar->addAction(historyAction);
+    toolBar->addSeparator();
+    toolBar->addAction(logoutAction);
+
+    connect(newGameAction, &QAction::triggered, this, &MainWindow::onNewGameClicked);
+    connect(historyAction, &QAction::triggered, this, &MainWindow::onShowHistoryClicked);
+    connect(logoutAction, &QAction::triggered, this, &MainWindow::onLogoutClicked);
+}
+
+void MainWindow::resizeEvent(QResizeEvent* event)
+{
+    QMainWindow::resizeEvent(event);
+    setBackgroundImage();
+}
+
+void MainWindow::setPlayers(const QString& p1, const QString& p2, const QString& mode)
+{
+    player1Name = p1;
+    player2Name = p2;
+    gameMode = mode;
+
+    QString playersText = QString("👤 %1 (X) vs %2 (O)")
+                              .arg(player1Name)
+                              .arg(player2Name);
+
+    if (gameMode == "PvAI") {
+        playersText = QString("👤 %1 (X) vs 🤖 AI (O)").arg(player1Name);
+    }
+
+    playersLabel->setText(playersText);
+    updateGameStatus();
+}
+
+void MainWindow::onGameButtonClicked()
+{
+    if (!gameActive) return;
+
+    QPushButton* button = qobject_cast<QPushButton*>(sender());
+    if (!button || !button->text().isEmpty()) return;
+
+    int row = button->property("row").toInt();
+    int col = button->property("col").toInt();
+
+    if (board->makeMove(row, col, currentPlayer.at(0).toLatin1())) {
+        button->setText(currentPlayer);
+
+        // Apply color styling based on player
+        if (currentPlayer == "X") {
+            button->setStyleSheet(button->styleSheet() + " color: #FF1493; text-shadow: 0 0 15px #FF1493;");
+        } else {
+            button->setStyleSheet(button->styleSheet() + " color: #00FFFF; text-shadow: 0 0 15px #00FFFF;");
+        }
+
+        animateButton(button);
+
+        QString move = QString("%1%2%3").arg(currentPlayer).arg(row).arg(col);
+        moveHistory.append(move);
+
+        checkGameEnd();
+
+        if (gameActive) {
+            currentPlayer = (currentPlayer == "X") ? "O" : "X";
+            updateGameStatus();
+
+            // AI move if needed
+            if (gameMode == "PvAI" && currentPlayer == "O") {
+                statusLabel->setText("🤖 AI is thinking...");
+                aiTimer->start(1000); // 1 second delay for AI move
+            }
+        }
+    }
+}
+
+void MainWindow::makeAIMove()
+{
+    if (!gameActive || currentPlayer != "O") return;
+
+    auto availableMoves = board->getAvailableMoves();
+    if (!availableMoves.empty()) {
+        auto move = aiPlayer->getMove(board);
+        int row = move.first;
+        int col = move.second;
+
+        if (board->makeMove(row, col, 'O')) {
+            gameButtons[row][col]->setText("O");
+            gameButtons[row][col]->setStyleSheet(gameButtons[row][col]->styleSheet() +
+                                                 " color: #00FFFF; text-shadow: 0 0 15px #00FFFF;");
+            animateButton(gameButtons[row][col]);
+
+            QString moveStr = QString("O%1%2").arg(row).arg(col);
+            moveHistory.append(moveStr);
+
+            checkGameEnd();
+
+            if (gameActive) {
+                currentPlayer = "X";
+                updateGameStatus();
+            }
+        }
+    }
+}
+
+// Fixed animateButton function implementation
+void MainWindow::animateButton(QPushButton* button)
+{
+    if (!button) return;
+
+    // Create a simple scale animation
+    QPropertyAnimation* animation = new QPropertyAnimation(button, "geometry");
+    animation->setDuration(150);
+
+    QRect originalGeometry = button->geometry();
+    QRect scaledGeometry = originalGeometry.adjusted(-3, -3, 3, 3);
+
+    animation->setStartValue(originalGeometry);
+    animation->setEndValue(scaledGeometry);
+    animation->setEasingCurve(QEasingCurve::OutBounce);
+
+    // Create return animation
+    QPropertyAnimation* returnAnimation = new QPropertyAnimation(button, "geometry");
+    returnAnimation->setDuration(150);
+    returnAnimation->setStartValue(scaledGeometry);
+    returnAnimation->setEndValue(originalGeometry);
+    returnAnimation->setEasingCurve(QEasingCurve::InBounce);
+
+    // Connect animations
+    connect(animation, &QPropertyAnimation::finished, [returnAnimation]() {
+        returnAnimation->start(QAbstractAnimation::DeleteWhenStopped);
+    });
+
+    animation->start(QAbstractAnimation::DeleteWhenStopped);
+}
+
+void MainWindow::updateGameStatus()
+{
+    if (!gameActive) return;
+
+    if (currentPlayer == "X") {
+        statusLabel->setText(QString("🎯 %1's Turn (X)").arg(player1Name));
+    } else {
+        if (gameMode == "PvAI") {
+            statusLabel->setText("🤖 AI's Turn (O)");
+        } else {
+            statusLabel->setText(QString("🎯 %1's Turn (O)").arg(player2Name));
+        }
+    }
+}
+
+void MainWindow::checkGameEnd()
+{
+    char winner = '\0';
+
+    if (board->checkWin('X')) {
+        winner = 'X';
+    } else if (board->checkWin('O')) {
+        winner = 'O';
+    } else if (board->checkTie()) {
+        winner = 'T'; // Tie
+    }
+
+    if (winner != '\0') {
+        gameActive = false;
+
+        QString result;
+        if (winner == 'T') {
+            result = "It's a Tie! 🤝";
+            statusLabel->setText("🤝 Game Tied!");
+        } else if (winner == 'X') {
+            result = QString("%1 Wins! 🎉").arg(player1Name);
+            statusLabel->setText(QString("🎉 %1 Wins!").arg(player1Name));
+        } else {
+            if (gameMode == "PvAI") {
+                result = "AI Wins! 🤖";
+                statusLabel->setText("🤖 AI Wins!");
+            } else {
+                result = QString("%1 Wins! 🎉").arg(player2Name);
+                statusLabel->setText(QString("🎉 %1 Wins!").arg(player2Name));
+            }
+        }
+
+        saveGameHistory(QString(winner));
+
+        QTimer::singleShot(1500, [this, result]() {
+            showGameOverDialog(result);
+        });
+    }
+}
+
+void MainWindow::showGameOverDialog(const QString& result)
+{
+    QDialog* gameOverDialog = new QDialog(this);
+    gameOverDialog->setWindowTitle("Game Over");
+    gameOverDialog->setFixedSize(450, 350);
+    gameOverDialog->setModal(true);
+
+    // Set XOXO background
+    QPixmap xoxoBackground("glowing-xoxo-neon-typography-dark-purple-background.jpg"); // Change path
+    if (!xoxoBackground.isNull()) {
+        xoxoBackground = xoxoBackground.scaled(gameOverDialog->size(),
+                                               Qt::KeepAspectRatioByExpanding,
+                                               Qt::SmoothTransformation);
+
+        QPalette palette;
+        palette.setBrush(QPalette::Window, xoxoBackground);
+        gameOverDialog->setPalette(palette);
+        gameOverDialog->setAutoFillBackground(true);
+    }
+
+    QVBoxLayout* layout = new QVBoxLayout(gameOverDialog);
+    layout->setSpacing(30);
+    layout->setContentsMargins(40, 40, 40, 40);
+
+    QLabel* resultLabel = new QLabel(result, gameOverDialog);
+    resultLabel->setAlignment(Qt::AlignCenter);
+    resultLabel->setStyleSheet(R"(
+        QLabel {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            text-shadow: 0 0 20px #FF1493, 0 0 30px #FF1493;
+            background: rgba(0, 0, 0, 0.7);
+            border: 3px solid #FF1493;
+            border-radius: 20px;
+            padding: 25px;
+        }
+    )");
+
+    QHBoxLayout* buttonLayout = new QHBoxLayout();
+
+    QPushButton* newGameButton = new QPushButton("🎯 New Game", gameOverDialog);
+    QPushButton* closeButton = new QPushButton("🚪 Close", gameOverDialog);
+
+    QString dialogButtonStyle = R"(
+        QPushButton {
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                stop:0 rgba(255, 20, 147, 0.9),
+                stop:1 rgba(138, 43, 226, 0.9));
+            color: white;
+            border: 2px solid #FF1493;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            padding: 15px 25px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+        }
+        QPushButton:hover {
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                stop:0 rgba(138, 43, 226, 1.0),
+                stop:1 rgba(255, 20, 147, 1.0));
+            border: 2px solid #00FFFF;
+            text-shadow: 0 0 15px #00FFFF;
+        }
+        QPushButton:pressed {
+            background: rgba(75, 0, 130, 0.9);
+            border: 2px solid #8A2BE2;
+        }
+    )";
+
+    newGameButton->setStyleSheet(dialogButtonStyle);
+    closeButton->setStyleSheet(dialogButtonStyle);
+
+    buttonLayout->addWidget(newGameButton);
+    buttonLayout->addWidget(closeButton);
+
+    layout->addWidget(resultLabel);
+    layout->addLayout(buttonLayout);
+
+    connect(newGameButton, &QPushButton::clicked, [this, gameOverDialog]() {
+        gameOverDialog->accept();
+        resetGame();
+    });
+
+    connect(closeButton, &QPushButton::clicked, gameOverDialog, &QDialog::accept);
+
+    gameOverDialog->exec();
+    delete gameOverDialog;
+}
+
+void MainWindow::saveGameHistory(const QString& winner)
+{
+    QFile file("game_history.json");
+    QJsonObject history;
+
+    if (file.open(QIODevice::ReadOnly)) {
+        QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+        history = doc.object();
+        file.close();
+    }
+
+    QJsonObject gameData;
+    gameData["winner"] = winner;
+    gameData["mode"] = gameMode;
+    gameData["opponent"] = player2Name;
+
+    QJsonArray movesArray;
+    for (const QString& move : moveHistory) {
+        movesArray.append(move);
+    }
+    gameData["moves"] = movesArray;
+
+    QJsonArray userGames;
+    if (history.contains(player1Name)) {
+        userGames = history[player1Name].toArray();
+    }
+    userGames.append(gameData);
+    history[player1Name] = userGames;
+
+    if (file.open(QIODevice::WriteOnly)) {
+        QJsonDocument doc(history);
+        file.write(doc.toJson());
+        file.close();
+    }
+}
+
+void MainWindow::onNewGameClicked()
+{
+    resetGame();
+}
+
+void MainWindow::onShowHistoryClicked()
+{
+    QMessageBox::information(this, "History", "Game history feature coming soon!");
+}
+
+void MainWindow::onLogoutClicked()
+{
+    int ret = QMessageBox::question(this, "Logout",
+                                    "Are you sure you want to logout?",
+                                    QMessageBox::Yes | QMessageBox::No);
+
+    if (ret == QMessageBox::Yes) {
+        this->close();
+
+        LoginDialog* loginDialog = new LoginDialog();
+        if (loginDialog->exec() == QDialog::Accepted) {
+            setPlayers(loginDialog->getPlayer1Name(),
+                       loginDialog->getPlayer2Name(),
+                       loginDialog->getGameMode());
+            resetGame();
+        } else {
+            QApplication::quit();
+        }
+        delete loginDialog;
+    }
+}
+
+void MainWindow::resetGame()
+{
+    board->reset();
+    gameActive = true;
+    currentPlayer = "X";
     moveHistory.clear();
 
     for (int i = 0; i < 3; ++i) {
         for (int j = 0; j < 3; ++j) {
-            buttons[i][j]->setText(" ");
-            buttons[i][j]->setEnabled(true);
-            buttons[i][j]->setStyleSheet(
-                "QPushButton {"
-                "    background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, "
-                "    stop:0 #ffffff, stop:1 #f8f9fa);"
-                "    border: 3px solid #3498db;"
-                "    border-radius: 15px;"
-                "    color: #2c3e50;"
-                "}"
-                "QPushButton:hover {"
-                "    background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, "
-                "    stop:0 #e3f2fd, stop:1 #bbdefb);"
-                "    border: 3px solid #2196f3;"
-                "}"
-                "QPushButton:pressed {"
-                "    background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, "
-                "    stop:0 #1976d2, stop:1 #1565c0);"
-                "    color: white;"
-                "}"
-                );
+            gameButtons[i][j]->setText("");
+            gameButtons[i][j]->setStyleSheet(""); // Reset styling
         }
     }
 
-    updateStatus();
-}
-
-void MainWindow::handleModeChange(int index) {
-    // This method is no longer used since mode is selected during login
-}
-
-void MainWindow::handleHistoryClick(QListWidgetItem *item) {
-    QMessageBox::information(this, "History Item Clicked", item->text());
-}
-
-void MainWindow::handleButtonClick() {
-    if (gameOver) return;
-
-    QPushButton *btn = qobject_cast<QPushButton*>(sender());
-    int row = btn->property("row").toInt();
-    int col = btn->property("col").toInt();
-
-    if (!board.makeMove(row, col, currentPlayer)) return;
-
-    updateButton(row, col);
-    moveHistory.append(QString("%1%2%3").arg(currentPlayer).arg(row).arg(col));
-
-    if (board.checkWin(currentPlayer)) {
-        QString winnerName;
-        if (mode == 1) {
-            winnerName = (currentPlayer == 'X') ? currentUser : player2User;
-        } else {
-            winnerName = (currentPlayer == 'X') ? currentUser : "Computer";
-        }
-
-        statusLabel->setText(QString("🎉 %1 wins! 🎉").arg(winnerName));
-        QMessageBox::information(this, "Game Over", QString("%1 wins!").arg(winnerName));
-        saveGameRecord(QString(currentPlayer));
-        gameOver = true;
-        disableBoard();
-        return;
-    } else if (board.checkTie()) {
-        statusLabel->setText("🤝 It's a tie! 🤝");
-        QMessageBox::information(this, "Game Over", "It's a tie!");
-        saveGameRecord("Tie");
-        gameOver = true;
-        disableBoard();
-        return;
-    }
-
-    currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
-    updateStatus();
-
-    if (mode == 2 && currentPlayer == 'O') {
-        makeAIMove();
-    }
-}
-
-void MainWindow::updateButton(int row, int col) {
-    QPushButton* btn = buttons[row][col];
-    btn->setText(QString(currentPlayer));
-
-    QString color = (currentPlayer == 'X') ?
-                        "color: #e74c3c; background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 #ffebee, stop:1 #ffcdd2);" :
-                        "color: #3498db; background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 #e3f2fd, stop:1 #bbdefb);";
-
-    btn->setStyleSheet(
-        "QPushButton {"
-        + color +
-        "    border: 3px solid #2c3e50;"
-        "    border-radius: 15px;"
-        "    font-weight: bold;"
-        "}"
-        );
-}
-
-void MainWindow::makeAIMove() {
-    auto [row, col] = ai.getBestMove(board, 'O', 'X');
-    board.makeMove(row, col, 'O');
-    updateButton(row, col);
-    moveHistory.append(QString("O%1%2").arg(row).arg(col));
-
-    if (board.checkWin('O')) {
-        statusLabel->setText("🤖 Computer wins! 🤖");
-        QMessageBox::information(this, "Game Over", "Computer wins!");
-        saveGameRecord("O");
-        gameOver = true;
-        disableBoard();
-        return;
-    } else if (board.checkTie()) {
-        statusLabel->setText("🤝 It's a tie! 🤝");
-        QMessageBox::information(this, "Game Over", "It's a tie!");
-        saveGameRecord("Tie");
-        gameOver = true;
-        disableBoard();
-        return;
-    }
-
-    currentPlayer = 'X';
-    updateStatus();
-}
-
-void MainWindow::updateStatus() {
-    if (!gameOver) {
-        QString playerName;
-        if (mode == 1) {
-            playerName = (currentPlayer == 'X') ? currentUser : player2User;
-        } else {
-            playerName = (currentPlayer == 'X') ? currentUser : "Computer";
-        }
-
-        QString emoji = (currentPlayer == 'X') ? "❌" : "⭕";
-        statusLabel->setText(QString("%1 %2's turn").arg(emoji).arg(playerName));
-    }
-}
-
-void MainWindow::disableBoard() {
-    for (int i = 0; i < 3; ++i) {
-        for (int j = 0; j < 3; ++j) {
-            buttons[i][j]->setEnabled(false);
-        }
-    }
-}
-
-void MainWindow::saveGameRecord(QString winner) {
-    QFile file("history.json");
-    QJsonObject root;
-    if (file.open(QIODevice::ReadOnly)) {
-        root = QJsonDocument::fromJson(file.readAll()).object();
-        file.close();
-    }
-
-    // Save for player 1
-    QJsonArray games = root[currentUser].toArray();
-    QJsonObject record;
-    record["winner"] = winner;
-    record["mode"] = (mode == 1) ? "PvP" : "PvAI";
-    if (mode == 1) {
-        record["opponent"] = player2User;
-    }
-    QJsonArray moves;
-    for (const QString &m : moveHistory) moves.append(m);
-    record["moves"] = moves;
-    games.append(record);
-    root[currentUser] = games;
-
-    // Save for player 2 in two-player mode
-    if (mode == 1) {
-        QJsonArray player2Games = root[player2User].toArray();
-        QJsonObject player2Record = record;
-        player2Record["opponent"] = currentUser;
-        player2Games.append(player2Record);
-        root[player2User] = player2Games;
-    }
-
-    if (file.open(QIODevice::WriteOnly)) {
-        file.write(QJsonDocument(root).toJson());
-        file.close();
-    }
-}
-
-void MainWindow::showGameHistory() {
-    QDialog *historyDialog = new QDialog(this);
-    historyDialog->setWindowTitle("🎮 Game History");
-    historyDialog->setFixedSize(600, 500);
-    historyDialog->setStyleSheet(
-        "QDialog {"
-        "    background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, "
-        "    stop:0 #667eea, stop:1 #764ba2);"
-        "}"
-        "QListWidget {"
-        "    background: rgba(255, 255, 255, 0.9);"
-        "    border-radius: 10px;"
-        "    padding: 10px;"
-        "    font-size: 14px;"
-        "    color: #2c3e50;"
-        "}"
-        "QPushButton {"
-        "    background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, "
-        "    stop:0 #4facfe, stop:1 #00f2fe);"
-        "    border: none;"
-        "    border-radius: 8px;"
-        "    color: white;"
-        "    font-weight: bold;"
-        "    padding: 10px 20px;"
-        "    margin: 5px;"
-        "}"
-        "QPushButton:hover {"
-        "    background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, "
-        "    stop:0 #43e97b, stop:1 #38f9d7);"
-        "}"
-        );
-
-    QVBoxLayout *layout = new QVBoxLayout(historyDialog);
-    QListWidget *list = new QListWidget(historyDialog);
-    layout->addWidget(list);
-
-    QFile file("history.json");
-    QJsonObject root;
-    if (file.open(QIODevice::ReadOnly)) {
-        root = QJsonDocument::fromJson(file.readAll()).object();
-        file.close();
-    }
-
-    QJsonArray games = root[currentUser].toArray();
-    for (const auto &game : games) {
-        QJsonObject g = game.toObject();
-        QString opponent = g.contains("opponent") ? g["opponent"].toString() : "AI";
-        list->addItem(QString("%1 vs %2: %3").arg(g["mode"].toString()).arg(opponent).arg(g["winner"].toString()));
-    }
-
-    QHBoxLayout *buttonLayout = new QHBoxLayout();
-    QPushButton *replayBtn = new QPushButton("🔄 Replay");
-    QPushButton *deleteBtn = new QPushButton("🗑️ Delete");
-    buttonLayout->addWidget(replayBtn);
-    buttonLayout->addWidget(deleteBtn);
-    layout->addLayout(buttonLayout);
-
-    connect(replayBtn, &QPushButton::clicked, this, [this, list, games]() {
-        int index = list->currentRow();
-        if (index >= 0 && index < games.size()) {
-            QJsonObject g = games[index].toObject();
-            QJsonArray moves = g["moves"].toArray();
-            resetGame();
-            for (const auto &m : moves) {
-                QString move = m.toString();
-                if (move.length() == 3) {
-                    char player = move[0].toLatin1();
-                    int r = move[1].digitValue();
-                    int c = move[2].digitValue();
-                    board.makeMove(r, c, player);
-                    currentPlayer = player;
-                    updateButton(r, c);
-                }
-            }
-            gameOver = true;
-            updateStatus();
-        }
-    });
-
-    connect(deleteBtn, &QPushButton::clicked, this, [this, list, &root, historyDialog]() {
-        int index = list->currentRow();
-        if (index >= 0) {
-            QJsonArray games = root[currentUser].toArray();
-            games.removeAt(index);
-            root[currentUser] = games;
-            QFile file("history.json");
-            if (file.open(QIODevice::WriteOnly)) {
-                file.write(QJsonDocument(root).toJson());
-                file.close();
-            }
-            list->takeItem(index);
-            QMessageBox::information(historyDialog, "Deleted", "Game record deleted.");
-        }
-    });
-
-    historyDialog->exec();
-}
-
-void MainWindow::startNewGame() {
-    resetGame();
+    updateGameStatus();
 }

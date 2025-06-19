@@ -1,79 +1,45 @@
 cmake_minimum_required(VERSION 3.16)
-
-project(Project VERSION 0.1 LANGUAGES CXX)
-
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
+project(TicTacToe VERSION 2.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
 
-set(PROJECT_SOURCES
+# Enable automatic processing
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+# Define source and header files separately
+set(SOURCES
     main.cpp
-    mainwindow.cpp
-    mainwindow.h
-    mainwindow.ui
-    Board.h
-    Board.cpp
-    AIPlayer.h
-    AIPlayer.cpp
-    LoginDialog.h
     LoginDialog.cpp
+    MainWindow.cpp
+    Board.cpp
+    AIPlayer.cpp
 )
 
-set(PROJECT_RESOURCES
-    resources.qrc
+set(HEADERS
+    LoginDialog.h
+    MainWindow.h
+    Board.h
+    AIPlayer.h
 )
 
-if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-    qt_add_executable(Project
-        MANUAL_FINALIZATION
-        ${PROJECT_SOURCES}
-        ${PROJECT_RESOURCES}
+# Create executable with both sources and headers
+add_executable(TicTacToe ${SOURCES} ${HEADERS})
 
-    )
-else()
-    if(ANDROID)
-        add_library(Project SHARED
-            ${PROJECT_SOURCES}
-            ${PROJECT_RESOURCES}
-        )
-    else()
-        add_executable(Project
-            ${PROJECT_SOURCES}
-            ${PROJECT_RESOURCES}
-        )
-    endif()
-endif()
+# Link libraries
+target_link_libraries(TicTacToe PRIVATE Qt6::Core Qt6::Widgets)
 
-target_link_libraries(Project PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+# Explicitly wrap headers with MOC (backup method)
+qt6_wrap_cpp(MOC_SOURCES ${HEADERS})
+target_sources(TicTacToe PRIVATE ${MOC_SOURCES})
 
-# Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
-# If you are developing for iOS or macOS you should consider setting an
-# explicit, fixed bundle identifier manually though.
-if(${QT_VERSION} VERSION_LESS 6.1.0)
-  set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.Project)
-endif()
-
-set_target_properties(Project PROPERTIES
-    ${BUNDLE_ID_OPTION}
-    MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
-    MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
-    MACOSX_BUNDLE TRUE
+# Set properties
+set_target_properties(TicTacToe PROPERTIES
     WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
 )
-
-include(GNUInstallDirs)
-install(TARGETS Project
-    BUNDLE DESTINATION .
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
-
-if(QT_VERSION_MAJOR EQUAL 6)
-    qt_finalize_executable(Project)
-endif()

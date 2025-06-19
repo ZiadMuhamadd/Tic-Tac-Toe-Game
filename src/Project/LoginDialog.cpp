@@ -1,659 +1,613 @@
 #include "LoginDialog.h"
-#include <QMessageBox>
-#include <QCryptographicHash>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QFile>
 #include <QApplication>
+#include <QScreen>
 
 LoginDialog::LoginDialog(QWidget *parent)
-    : QDialog(parent), selectedMode(0), registering(false) {
-    setWindowTitle("Tic Tac Toe - Game Setup");
-    setFixedSize(500, 400);
+    : QDialog(parent), currentStep(0)
+{
+    setWindowTitle("Tic Tac Toe - Login");
 
-    stackedWidget = new QStackedWidget(this);
+    // Make the dialog full screen using Qt 6 approach
+    setWindowState(Qt::WindowFullScreen);
+    setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
 
-    setupModeSelectionPage();
-    setupAuthTypeSelectionPage();
-    setupLoginPage();
-    setupRegisterPage();
-    setupPlayer2AuthTypePage();
-    setupPlayer2LoginPage();
-    setupPlayer2RegisterPage();
+    // Get screen size using Qt 6 method
+    QScreen *screen = QApplication::primaryScreen();
+    QRect screenGeometry = screen->geometry();
+    setGeometry(screenGeometry);
 
-    QVBoxLayout *mainLayout = new QVBoxLayout(this);
-    mainLayout->addWidget(stackedWidget);
+    setModal(true);
 
-    statusLabel = new QLabel(this);
-    statusLabel->setAlignment(Qt::AlignCenter);
-    statusLabel->setStyleSheet("color: red; font-weight: bold;");
-    mainLayout->addWidget(statusLabel);
-
-    applyStyles();
-    stackedWidget->setCurrentWidget(modeSelectionPage);
+    setupUI();
+    setBackgroundImage();
+    setupStyling();
+    resetToModeSelection();
 }
 
-void LoginDialog::setupModeSelectionPage() {
-    modeSelectionPage = new QWidget();
-    QVBoxLayout *layout = new QVBoxLayout(modeSelectionPage);
+void LoginDialog::setupUI()
+{
+    mainLayout = new QVBoxLayout(this);
+    mainLayout->setSpacing(20);  // Reduced spacing to fit more content
+    mainLayout->setContentsMargins(60, 40, 60, 40);  // Reduced margins
 
-    QLabel *titleLabel = new QLabel("Choose Game Mode");
+    // Title - larger for full screen
+    titleLabel = new QLabel("🎮 TIC TAC TOE 🎮", this);
     titleLabel->setAlignment(Qt::AlignCenter);
-    titleLabel->setStyleSheet("font-size: 24px; font-weight: bold; color: #2c3e50; margin: 20px;");
-    layout->addWidget(titleLabel);
+    titleLabel->setObjectName("titleLabel");
 
-    layout->addStretch();
+    // Instruction
+    instructionLabel = new QLabel("Welcome! Choose your game mode:", this);
+    instructionLabel->setAlignment(Qt::AlignCenter);
+    instructionLabel->setObjectName("instructionLabel");
 
-    twoPlayersButton = new QPushButton("Two Players");
-    twoPlayersButton->setFixedSize(200, 60);
-    playerVsAIButton = new QPushButton("Player vs AI");
-    playerVsAIButton->setFixedSize(200, 60);
+    // Mode selection
+    modeComboBox = new QComboBox(this);
+    modeComboBox->addItem("🎯 Player vs Player");
+    modeComboBox->addItem("🤖 Player vs AI");
+    modeComboBox->setObjectName("modeComboBox");
 
-    QHBoxLayout *buttonLayout = new QHBoxLayout();
-    buttonLayout->addStretch();
-    buttonLayout->addWidget(twoPlayersButton);
-    buttonLayout->addSpacing(20);
-    buttonLayout->addWidget(playerVsAIButton);
-    buttonLayout->addStretch();
+    continueButton = new QPushButton("Continue", this);
+    continueButton->setObjectName("primaryButton");
 
-    layout->addLayout(buttonLayout);
-    layout->addStretch();
+    // Player info
+    playerLabel = new QLabel(this);
+    playerLabel->setAlignment(Qt::AlignCenter);
+    playerLabel->setObjectName("playerLabel");
 
-    // Add quit button
-    QPushButton *quitButton = new QPushButton("❌ Quit");
-    quitButton->setFixedSize(100, 50);
-    quitButton->setStyleSheet(
-        "QPushButton {"
-        "    background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, "
-        "    stop:0 #e74c3c, stop:1 #c0392b);"
-        "    border: none;"
-        "    border-radius: 8px;"
-        "    color: white;"
-        "    font-weight: bold;"
-        "    font-size: 12px;"
-        "}"
-        "QPushButton:hover {"
-        "    background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, "
-        "    stop:0 #ec7063, stop:1 #e74c3c);"
-        "}"
-        );
+    // Authentication fields
+    usernameLabel = new QLabel("Username:", this);
+    usernameLabel->setObjectName("fieldLabel");
 
-    QHBoxLayout *quitLayout = new QHBoxLayout();
-    quitLayout->addStretch();
-    quitLayout->addWidget(quitButton);
-    layout->addLayout(quitLayout);
+    usernameLineEdit = new QLineEdit(this);
+    usernameLineEdit->setObjectName("inputField");
+    usernameLineEdit->setPlaceholderText("Enter your username");
 
-    connect(twoPlayersButton, &QPushButton::clicked, this, &LoginDialog::handleTwoPlayersClicked);
-    connect(playerVsAIButton, &QPushButton::clicked, this, &LoginDialog::handlePlayerVsAIClicked);
-    connect(quitButton, &QPushButton::clicked, [this]() {
-        QApplication::quit();
-    });
+    passwordLabel = new QLabel("Password:", this);
+    passwordLabel->setObjectName("fieldLabel");
 
-    stackedWidget->addWidget(modeSelectionPage);
-}
+    passwordLineEdit = new QLineEdit(this);
+    passwordLineEdit->setObjectName("inputField");
+    passwordLineEdit->setEchoMode(QLineEdit::Password);
+    passwordLineEdit->setPlaceholderText("Enter your password");
 
-void LoginDialog::setupAuthTypeSelectionPage() {
-    authTypeSelectionPage = new QWidget();
-    QVBoxLayout *layout = new QVBoxLayout(authTypeSelectionPage);
+    confirmPasswordLabel = new QLabel("Confirm Password:", this);
+    confirmPasswordLabel->setObjectName("fieldLabel");
 
-    QLabel *titleLabel = new QLabel("Player 1 ");
-    titleLabel->setAlignment(Qt::AlignCenter);
-    titleLabel->setStyleSheet("font-size: 20px; font-weight: bold; color: #2c3e50; margin: 20px;");
-    layout->addWidget(titleLabel);
+    confirmPasswordLineEdit = new QLineEdit(this);
+    confirmPasswordLineEdit->setObjectName("inputField");
+    confirmPasswordLineEdit->setEchoMode(QLineEdit::Password);
+    confirmPasswordLineEdit->setPlaceholderText("Confirm your password");
 
-    layout->addStretch();
+    // Buttons
+    signInButton = new QPushButton("Sign In", this);
+    signInButton->setObjectName("primaryButton");
 
-    signInButton = new QPushButton("Sign In");
-    signInButton->setFixedSize(150, 50);
-    newPlayerButton = new QPushButton("New Player");
-    newPlayerButton->setFixedSize(150, 50);
+    newPlayerButton = new QPushButton("New Player", this);
+    newPlayerButton->setObjectName("secondaryButton");
 
-    QHBoxLayout *buttonLayout = new QHBoxLayout();
+    nextPlayerButton = new QPushButton("Next Player", this);
+    nextPlayerButton->setObjectName("primaryButton");
+
+    backButton = new QPushButton("← Back", this);
+    backButton->setObjectName("backButton");
+
+    // Add Exit button for full screen mode
+    QPushButton* exitButton = new QPushButton("✕ Exit", this);
+    exitButton->setObjectName("exitButton");
+    connect(exitButton, &QPushButton::clicked, this, &QDialog::reject);
+
+    // Game start
+    gameInfoLabel = new QLabel(this);
+    gameInfoLabel->setAlignment(Qt::AlignCenter);
+    gameInfoLabel->setObjectName("gameInfoLabel");
+
+    startGameButton = new QPushButton("🚀 START GAME", this);
+    startGameButton->setObjectName("startButton");
+
+    // Create a centered container widget with increased width for full screen
+    QWidget* centerWidget = new QWidget(this);
+    centerWidget->setMaximumWidth(800);  // Increased from 600 to 800
+    centerWidget->setMinimumWidth(600);  // Added minimum width
+    centerWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+
+    QVBoxLayout* centerLayout = new QVBoxLayout(centerWidget);
+    centerLayout->setSpacing(15);  // Reduced spacing to fit more content
+    centerLayout->setContentsMargins(20, 20, 20, 20);  // Added margins to center widget
+
+    // Add widgets to center layout
+    centerLayout->addWidget(titleLabel);
+    centerLayout->addWidget(instructionLabel);
+    centerLayout->addWidget(modeComboBox);
+    centerLayout->addWidget(continueButton);
+    centerLayout->addWidget(playerLabel);
+    centerLayout->addWidget(usernameLabel);
+    centerLayout->addWidget(usernameLineEdit);
+    centerLayout->addWidget(passwordLabel);
+    centerLayout->addWidget(passwordLineEdit);
+    centerLayout->addWidget(confirmPasswordLabel);
+    centerLayout->addWidget(confirmPasswordLineEdit);
+
+    // Button layout with better spacing
+    QHBoxLayout* buttonLayout = new QHBoxLayout();
+    buttonLayout->setSpacing(15);  // Added spacing between buttons
+    buttonLayout->addWidget(backButton);
     buttonLayout->addStretch();
     buttonLayout->addWidget(signInButton);
-    buttonLayout->addSpacing(20);
     buttonLayout->addWidget(newPlayerButton);
-    buttonLayout->addStretch();
+    buttonLayout->addWidget(nextPlayerButton);
+    centerLayout->addLayout(buttonLayout);
 
-    layout->addLayout(buttonLayout);
-    layout->addStretch();
+    // Add some space before game info
+    centerLayout->addSpacing(20);
+    centerLayout->addWidget(gameInfoLabel);
+    centerLayout->addWidget(startGameButton);
 
-    backToModeButton = new QPushButton("← Back");
-    backToModeButton->setFixedSize(80, 50);
-    QHBoxLayout *backLayout = new QHBoxLayout();
-    backLayout->addWidget(backToModeButton);
-    backLayout->addStretch();
-    layout->addLayout(backLayout);
+    // Create top-right exit button layout
+    QHBoxLayout* topLayout = new QHBoxLayout();
+    topLayout->setContentsMargins(0, 10, 10, 0);  // Added margins
+    topLayout->addStretch();
+    topLayout->addWidget(exitButton);
 
-    connect(signInButton, &QPushButton::clicked, this, &LoginDialog::handleSignInClicked);
-    connect(newPlayerButton, &QPushButton::clicked, this, &LoginDialog::handleNewPlayerClicked);
-    connect(backToModeButton, &QPushButton::clicked, [this]() {
-        stackedWidget->setCurrentWidget(modeSelectionPage);
-    });
+    // Add everything to main layout with better structure
+    mainLayout->addLayout(topLayout);
 
-    stackedWidget->addWidget(authTypeSelectionPage);
-}
+    // Add flexible space at top
+    mainLayout->addSpacing(20);
 
-void LoginDialog::setupLoginPage() {
-    loginPage = new QWidget();
-    QVBoxLayout *layout = new QVBoxLayout(loginPage);
+    // Center the main content horizontally
+    QHBoxLayout* horizontalCenterLayout = new QHBoxLayout();
+    horizontalCenterLayout->addStretch();
+    horizontalCenterLayout->addWidget(centerWidget);
+    horizontalCenterLayout->addStretch();
 
-    QLabel *titleLabel = new QLabel("Sign In");
-    titleLabel->setAlignment(Qt::AlignCenter);
-    titleLabel->setStyleSheet("font-size: 20px; font-weight: bold; color: #2c3e50; margin: 20px;");
-    layout->addWidget(titleLabel);
+    mainLayout->addLayout(horizontalCenterLayout);
 
-    layout->addStretch();
+    // Add flexible space at bottom to ensure buttons are visible
+    mainLayout->addSpacing(40);
 
-    usernameEdit = new QLineEdit();
-    usernameEdit->setPlaceholderText("Username");
-    usernameEdit->setFixedHeight(50);
-
-    passwordEdit = new QLineEdit();
-    passwordEdit->setPlaceholderText("Password");
-    passwordEdit->setEchoMode(QLineEdit::Password);
-    passwordEdit->setFixedHeight(50);
-
-    loginButton = new QPushButton("Login");
-    loginButton->setFixedHeight(45);
-
-    layout->addWidget(usernameEdit);
-    layout->addWidget(passwordEdit);
-    layout->addSpacing(10);
-    layout->addWidget(loginButton);
-    layout->addStretch();
-
-    backToAuthButton = new QPushButton("← Back");
-    backToAuthButton->setFixedSize(80, 50);
-    QHBoxLayout *backLayout = new QHBoxLayout();
-    backLayout->addWidget(backToAuthButton);
-    backLayout->addStretch();
-    layout->addLayout(backLayout);
-
-    connect(loginButton, &QPushButton::clicked, this, &LoginDialog::handleLoginClicked);
-    connect(backToAuthButton, &QPushButton::clicked, [this]() {
-        stackedWidget->setCurrentWidget(authTypeSelectionPage);
-    });
-
-    stackedWidget->addWidget(loginPage);
-}
-
-void LoginDialog::setupRegisterPage() {
-    registerPage = new QWidget();
-    QVBoxLayout *layout = new QVBoxLayout(registerPage);
-
-    QLabel *titleLabel = new QLabel("Create New Account");
-    titleLabel->setAlignment(Qt::AlignCenter);
-    titleLabel->setStyleSheet("font-size: 20px; font-weight: bold; color: #2c3e50; margin: 10px;");
-    layout->addWidget(titleLabel);
-
-    layout->addStretch();
-
-    regUsernameEdit = new QLineEdit();
-    regUsernameEdit->setPlaceholderText("Username");
-    regUsernameEdit->setFixedHeight(50);
-
-    regPasswordEdit = new QLineEdit();
-    regPasswordEdit->setPlaceholderText("Password");
-    regPasswordEdit->setEchoMode(QLineEdit::Password);
-    regPasswordEdit->setFixedHeight(50);
-
-    regConfirmPasswordEdit = new QLineEdit();
-    regConfirmPasswordEdit->setPlaceholderText("Confirm Password");
-    regConfirmPasswordEdit->setEchoMode(QLineEdit::Password);
-    regConfirmPasswordEdit->setFixedHeight(50);
-
-    registerButton = new QPushButton("Sign Up");
-    registerButton->setFixedHeight(50);
-
-    layout->addWidget(regUsernameEdit);
-    layout->addWidget(regPasswordEdit);
-    layout->addWidget(regConfirmPasswordEdit);
-    layout->addSpacing(10);
-    layout->addWidget(registerButton);
-    layout->addStretch();
-
-    backToAuthButton2 = new QPushButton("← Back");
-    backToAuthButton2->setFixedSize(80, 50);
-    QHBoxLayout *backLayout = new QHBoxLayout();
-    backLayout->addWidget(backToAuthButton2);
-    backLayout->addStretch();
-    layout->addLayout(backLayout);
-
-    connect(registerButton, &QPushButton::clicked, this, &LoginDialog::handleRegisterClicked);
-    connect(backToAuthButton2, &QPushButton::clicked, [this]() {
-        stackedWidget->setCurrentWidget(authTypeSelectionPage);
-    });
-
-    stackedWidget->addWidget(registerPage);
-}
-
-void LoginDialog::setupPlayer2AuthTypePage() {
-    player2AuthTypePage = new QWidget();
-    QVBoxLayout *layout = new QVBoxLayout(player2AuthTypePage);
-
-    QLabel *titleLabel = new QLabel("Player 2 ");
-    titleLabel->setAlignment(Qt::AlignCenter);
-    titleLabel->setStyleSheet("font-size: 20px; font-weight: bold; color: #2c3e50; margin: 20px;");
-    layout->addWidget(titleLabel);
-
-    player2InfoLabel = new QLabel();
-    player2InfoLabel->setAlignment(Qt::AlignCenter);
-    player2InfoLabel->setStyleSheet("font-size: 14px; color: #7f8c8d; margin: 10px;");
-    layout->addWidget(player2InfoLabel);
-
-    layout->addStretch();
-
-    player2SignInButton = new QPushButton("Sign In");
-    player2SignInButton->setFixedSize(150, 50);
-    player2NewPlayerButton = new QPushButton("New Player");
-    player2NewPlayerButton->setFixedSize(150, 50);
-
-    QHBoxLayout *buttonLayout = new QHBoxLayout();
-    buttonLayout->addStretch();
-    buttonLayout->addWidget(player2SignInButton);
-    buttonLayout->addSpacing(20);
-    buttonLayout->addWidget(player2NewPlayerButton);
-    buttonLayout->addStretch();
-
-    layout->addLayout(buttonLayout);
-    layout->addStretch();
-
-    connect(player2SignInButton, &QPushButton::clicked, this, &LoginDialog::handlePlayer2SignInClicked);
-    connect(player2NewPlayerButton, &QPushButton::clicked, this, &LoginDialog::handlePlayer2NewPlayerClicked);
-
-    stackedWidget->addWidget(player2AuthTypePage);
-}
-
-void LoginDialog::setupPlayer2LoginPage() {
-    player2LoginPage = new QWidget();
-    QVBoxLayout *layout = new QVBoxLayout(player2LoginPage);
-
-    QLabel *titleLabel = new QLabel("Player 2 Sign In");
-    titleLabel->setAlignment(Qt::AlignCenter);
-    titleLabel->setStyleSheet("font-size: 20px; font-weight: bold; color: #2c3e50; margin: 20px;");
-    layout->addWidget(titleLabel);
-
-    layout->addStretch();
-
-    player2UsernameEdit = new QLineEdit();
-    player2UsernameEdit->setPlaceholderText("Username");
-    player2UsernameEdit->setFixedHeight(50);
-
-    player2PasswordEdit = new QLineEdit();
-    player2PasswordEdit->setPlaceholderText("Password");
-    player2PasswordEdit->setEchoMode(QLineEdit::Password);
-    player2PasswordEdit->setFixedHeight(50);
-
-    player2LoginButton = new QPushButton("Login");
-    player2LoginButton->setFixedHeight(50);
-
-    layout->addWidget(player2UsernameEdit);
-    layout->addWidget(player2PasswordEdit);
-    layout->addSpacing(10);
-    layout->addWidget(player2LoginButton);
-    layout->addStretch();
-
-    backToPlayer2AuthButton = new QPushButton("← Back");
-    backToPlayer2AuthButton->setFixedSize(80, 50);
-    QHBoxLayout *backLayout = new QHBoxLayout();
-    backLayout->addWidget(backToPlayer2AuthButton);
-    backLayout->addStretch();
-    layout->addLayout(backLayout);
-
-    connect(player2LoginButton, &QPushButton::clicked, this, &LoginDialog::handlePlayer2LoginClicked);
-    connect(backToPlayer2AuthButton, &QPushButton::clicked, [this]() {
-        stackedWidget->setCurrentWidget(player2AuthTypePage);
-    });
-
-    stackedWidget->addWidget(player2LoginPage);
-}
-
-void LoginDialog::setupPlayer2RegisterPage() {
-    player2RegisterPage = new QWidget();
-    QVBoxLayout *layout = new QVBoxLayout(player2RegisterPage);
-
-    QLabel *titleLabel = new QLabel("Player 2 - Create New Account");
-    titleLabel->setAlignment(Qt::AlignCenter);
-    titleLabel->setStyleSheet("font-size: 20px; font-weight: bold; color: #2c3e50; margin: 10px;");
-    layout->addWidget(titleLabel);
-
-    layout->addStretch();
-
-    player2RegUsernameEdit = new QLineEdit();
-    player2RegUsernameEdit->setPlaceholderText("Username");
-    player2RegUsernameEdit->setFixedHeight(50);
-
-    player2RegPasswordEdit = new QLineEdit();
-    player2RegPasswordEdit->setPlaceholderText("Password");
-    player2RegPasswordEdit->setEchoMode(QLineEdit::Password);
-    player2RegPasswordEdit->setFixedHeight(50);
-
-    player2RegConfirmPasswordEdit = new QLineEdit();
-    player2RegConfirmPasswordEdit->setPlaceholderText("Confirm Password");
-    player2RegConfirmPasswordEdit->setEchoMode(QLineEdit::Password);
-    player2RegConfirmPasswordEdit->setFixedHeight(50);
-
-    player2RegisterButton = new QPushButton("Sign Up");
-    player2RegisterButton->setFixedHeight(50);
-
-    layout->addWidget(player2RegUsernameEdit);
-    layout->addWidget(player2RegPasswordEdit);
-    layout->addWidget(player2RegConfirmPasswordEdit);
-    layout->addSpacing(10);
-    layout->addWidget(player2RegisterButton);
-    layout->addStretch();
-
-    backToPlayer2AuthButton2 = new QPushButton("← Back");
-    backToPlayer2AuthButton2->setFixedSize(80, 50);
-    QHBoxLayout *backLayout = new QHBoxLayout();
-    backLayout->addWidget(backToPlayer2AuthButton2);
-    backLayout->addStretch();
-    layout->addLayout(backLayout);
-
-    connect(player2RegisterButton, &QPushButton::clicked, this, &LoginDialog::handlePlayer2RegisterClicked);
-    connect(backToPlayer2AuthButton2, &QPushButton::clicked, [this]() {
-        stackedWidget->setCurrentWidget(player2AuthTypePage);
-    });
-
-    stackedWidget->addWidget(player2RegisterPage);
-}
-
-void LoginDialog::applyStyles() {
-    // Main dialog background
-    setStyleSheet(
-        "QDialog {"
-        "    background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, "
-        "    stop:0 #667eea, stop:1 #764ba2);"
-        "}"
-        "QPushButton {"
-        "    background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, "
-        "    stop:0 #4facfe, stop:1 #00f2fe);"
-        "    border: none;"
-        "    border-radius: 8px;"
-        "    color: white;"
-        "    font-weight: bold;"
-        "    font-size: 14px;"
-        "    padding: 8px;"
-        "}"
-        "QPushButton:hover {"
-        "    background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, "
-        "    stop:0 #43e97b, stop:1 #38f9d7);"
-        "}"
-        "QPushButton:pressed {"
-        "    background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, "
-        "    stop:0 #fa709a, stop:1 #fee140);"
-        "}"
-        "QLineEdit {"
-        "    background-color: rgba(255, 255, 255, 0.95);"
-        "    border: 2px solid #bdc3c7;"
-        "    border-radius: 8px;"
-        "    padding: 8px;"
-        "    font-size: 14px;"
-        "    font-weight: bold;"
-        "    color: #2c3e50;"
-        "    margin: 5px;"
-        "}"
-        "QLineEdit:focus {"
-        "    border: 2px solid #3498db;"
-        "    background-color: white;"
-        "    color: #2c3e50;"
-        "}"
-        "QWidget {"
-        "    background: transparent;"
-        "}"
-        );
-
-    // Add quit button to mode selection page
-    QPushButton *quitButton = new QPushButton("❌ Quit", modeSelectionPage);
-    quitButton->setFixedSize(80, 50);
-    quitButton->setStyleSheet(
-        "QPushButton {"
-        "    background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, "
-        "    stop:0 #e74c3c, stop:1 #c0392b);"
-        "    border: none;"
-        "    border-radius: 8px;"
-        "    color: white;"
-        "    font-weight: bold;"
-        "    font-size: 12px;"
-        "}"
-        "QPushButton:hover {"
-        "    background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, "
-        "    stop:0 #ec7063, stop:1 #e74c3c);"
-        "}"
-        );
-
-    // Position quit button in top-right corner
-    quitButton->move(modeSelectionPage->width() - 90, 10);
-
-    connect(quitButton, &QPushButton::clicked, [this]() {
-        QApplication::quit();
-    });
+    // Connect signals
+    connect(continueButton, &QPushButton::clicked, this, &LoginDialog::onModeChanged);
+    connect(signInButton, &QPushButton::clicked, this, &LoginDialog::onSignInClicked);
+    connect(newPlayerButton, &QPushButton::clicked, this, &LoginDialog::onNewPlayerClicked);
+    connect(nextPlayerButton, &QPushButton::clicked, this, &LoginDialog::onNextPlayerClicked);
+    connect(startGameButton, &QPushButton::clicked, this, &LoginDialog::onStartGameClicked);
+    connect(backButton, &QPushButton::clicked, this, &LoginDialog::onBackClicked);
 }
 
 
+void LoginDialog::setupStyling()
+{
+    QString style = R"(
+        QDialog {
+            background-color: rgba(0, 0, 0, 0.1);
+        }
 
-// Rest of the implementation methods remain the same...
-void LoginDialog::handleTwoPlayersClicked() {
-    selectedMode = 1;
-    stackedWidget->setCurrentWidget(authTypeSelectionPage);
+        #titleLabel {
+            color: #FFD700;
+            font-size: 42px;  /* Slightly reduced */
+            font-weight: bold;
+            text-shadow: 0 0 30px #FFD700, 0 0 40px #FFD700;
+            background: rgba(25, 25, 112, 0.8);
+            border: 4px solid #FFD700;
+            border-radius: 25px;
+            padding: 25px;  /* Reduced padding */
+            margin: 15px;   /* Reduced margin */
+        }
+
+        #instructionLabel, #playerLabel, #gameInfoLabel {
+            color: white;
+            font-size: 20px;  /* Slightly reduced */
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
+            background: rgba(75, 0, 130, 0.7);
+            border-radius: 15px;
+            padding: 15px;  /* Reduced padding */
+            border: 3px solid #9370DB;
+            margin: 5px 0;  /* Added margin */
+        }
+
+        #fieldLabel {
+            color: #E6E6FA;
+            font-size: 16px;  /* Slightly reduced */
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            margin: 5px 0;
+        }
+
+        #inputField {
+            background: rgba(25, 25, 112, 0.9);
+            color: white;
+            border: 3px solid #4169E1;
+            border-radius: 12px;
+            padding: 15px 18px;  /* Slightly reduced padding */
+            font-size: 15px;     /* Slightly reduced font */
+            selection-background-color: rgba(138, 43, 226, 0.7);
+            min-height: 18px;    /* Reduced min-height */
+            margin: 3px 0;       /* Added margin */
+        }
+
+        #inputField:focus {
+            border: 3px solid #00BFFF;
+            background: rgba(25, 25, 112, 1.0);
+        }
+
+        #modeComboBox {
+            background: rgba(75, 0, 130, 0.9);
+            color: white;
+            border: 3px solid #9370DB;
+            border-radius: 15px;
+            padding: 15px 18px;  /* Slightly reduced padding */
+            font-size: 16px;     /* Slightly reduced font */
+            font-weight: bold;
+            min-height: 22px;    /* Reduced min-height */
+            margin: 5px 0;       /* Added margin */
+        }
+
+        #primaryButton {
+            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                stop:0 rgba(138, 43, 226, 0.9),
+                stop:1 rgba(75, 0, 130, 0.9));
+            color: white;
+            border: 3px solid #FFD700;
+            border-radius: 18px;
+            font-size: 16px;     /* Slightly reduced font */
+            font-weight: bold;
+            padding: 15px 30px;  /* Slightly reduced padding */
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            min-height: 20px;    /* Reduced min-height */
+            min-width: 120px;    /* Added min-width */
+        }
+
+        #primaryButton:hover {
+            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                stop:0 rgba(138, 43, 226, 1.0),
+                stop:1 rgba(75, 0, 130, 1.0));
+            border: 3px solid #FFA500;
+        }
+
+        #secondaryButton {
+            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                stop:0 rgba(72, 61, 139, 0.9),
+                stop:1 rgba(106, 90, 205, 0.9));
+            color: white;
+            border: 3px solid #9370DB;
+            border-radius: 18px;
+            font-size: 16px;     /* Slightly reduced font */
+            font-weight: bold;
+            padding: 15px 30px;  /* Slightly reduced padding */
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            min-height: 20px;    /* Reduced min-height */
+            min-width: 120px;    /* Added min-width */
+        }
+
+        #secondaryButton:hover {
+            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                stop:0 rgba(106, 90, 205, 1.0),
+                stop:1 rgba(72, 61, 139, 1.0));
+            border: 3px solid #BA55D3;
+        }
+
+        #backButton {
+            background: rgba(220, 20, 60, 0.8);
+            color: white;
+            border: 3px solid #DC143C;
+            border-radius: 15px;
+            font-size: 14px;     /* Slightly reduced font */
+            font-weight: bold;
+            padding: 12px 20px;  /* Slightly reduced padding */
+            min-width: 80px;     /* Added min-width */
+        }
+
+        #backButton:hover {
+            background: rgba(220, 20, 60, 1.0);
+            border: 3px solid #FF6347;
+        }
+
+        #exitButton {
+            background: rgba(139, 0, 0, 0.8);
+            color: white;
+            border: 3px solid #8B0000;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            padding: 12px 20px;  /* Slightly reduced padding */
+            margin: 10px;        /* Reduced margin */
+        }
+
+        #exitButton:hover {
+            background: rgba(139, 0, 0, 1.0);
+            border: 3px solid #FF0000;
+        }
+
+        #startButton {
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                stop:0 rgba(255, 215, 0, 0.9),
+                stop:0.5 rgba(255, 140, 0, 0.9),
+                stop:1 rgba(255, 69, 0, 0.9));
+            color: #8B0000;
+            border: 4px solid #FFD700;
+            border-radius: 25px;
+            font-size: 22px;     /* Slightly reduced font */
+            font-weight: bold;
+            padding: 20px 40px;  /* Slightly reduced padding */
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+            margin: 10px 0;      /* Added margin */
+        }
+
+        #startButton:hover {
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                stop:0 rgba(255, 215, 0, 1.0),
+                stop:0.5 rgba(255, 140, 0, 1.0),
+                stop:1 rgba(255, 69, 0, 1.0));
+            border: 4px solid #FFA500;
+        }
+    )";
+
+    this->setStyleSheet(style);
 }
 
-void LoginDialog::handlePlayerVsAIClicked() {
-    selectedMode = 2;
-    stackedWidget->setCurrentWidget(authTypeSelectionPage);
+
+void LoginDialog::setBackgroundImage()
+{
+    QPixmap loginBackground("D:/images/login_bg.jpg");
+
+    if (!loginBackground.isNull()) {
+        loginBackground = loginBackground.scaled(this->size(),
+                                                 Qt::KeepAspectRatioByExpanding,
+                                                 Qt::SmoothTransformation);
+
+        QPalette palette;
+        palette.setBrush(QPalette::Window, loginBackground);
+        this->setPalette(palette);
+        this->setAutoFillBackground(true);
+    }
 }
 
-void LoginDialog::handleSignInClicked() {
-    stackedWidget->setCurrentWidget(loginPage);
+void LoginDialog::resizeEvent(QResizeEvent* event)
+{
+    QDialog::resizeEvent(event);
+    setBackgroundImage();
 }
 
-void LoginDialog::handleNewPlayerClicked() {
-    stackedWidget->setCurrentWidget(registerPage);
+void LoginDialog::resetToModeSelection()
+{
+    currentStep = 0;
+
+    instructionLabel->setText("Welcome! Choose your game mode:");
+    instructionLabel->show();
+    modeComboBox->show();
+    continueButton->show();
+
+    playerLabel->hide();
+    usernameLabel->hide();
+    usernameLineEdit->hide();
+    passwordLabel->hide();
+    passwordLineEdit->hide();
+    confirmPasswordLabel->hide();
+    confirmPasswordLineEdit->hide();
+    signInButton->hide();
+    newPlayerButton->hide();
+    nextPlayerButton->hide();
+    backButton->hide();
+    gameInfoLabel->hide();
+    startGameButton->hide();
+
+    player1Name.clear();
+    player2Name.clear();
+    usernameLineEdit->clear();
+    passwordLineEdit->clear();
+    confirmPasswordLineEdit->clear();
 }
 
-void LoginDialog::handleLoginClicked() {
-    QString username = usernameEdit->text().trimmed();
-    QString password = passwordEdit->text();
+void LoginDialog::onModeChanged()
+{
+    gameMode = modeComboBox->currentIndex() == 0 ? "PvP" : "PvAI";
+    showPlayer1Auth();
+}
+
+void LoginDialog::showPlayer1Auth()
+{
+    currentStep = 1;
+
+    instructionLabel->hide();
+    modeComboBox->hide();
+    continueButton->hide();
+
+    playerLabel->setText("🎮 Player 1 Authentication");
+    playerLabel->show();
+    usernameLabel->show();
+    usernameLineEdit->show();
+    passwordLabel->show();
+    passwordLineEdit->show();
+    signInButton->show();
+    newPlayerButton->show();
+    backButton->show();
+
+    confirmPasswordLabel->hide();
+    confirmPasswordLineEdit->hide();
+    nextPlayerButton->hide();
+    gameInfoLabel->hide();
+    startGameButton->hide();
+}
+
+void LoginDialog::showPlayer2Auth()
+{
+    currentStep = 2;
+
+    playerLabel->setText("🎮 Player 2 Authentication");
+    usernameLineEdit->clear();
+    passwordLineEdit->clear();
+    confirmPasswordLineEdit->hide();
+    confirmPasswordLabel->hide();
+}
+
+void LoginDialog::showGameStart()
+{
+    currentStep = 3;
+
+    playerLabel->hide();
+    usernameLabel->hide();
+    usernameLineEdit->hide();
+    passwordLabel->hide();
+    passwordLineEdit->hide();
+    signInButton->hide();
+    newPlayerButton->hide();
+    nextPlayerButton->hide();
+
+    QString info = QString("🎯 Game Mode: %1\n👤 Player 1: %2")
+                       .arg(gameMode == "PvP" ? "Player vs Player" : "Player vs AI")
+                       .arg(player1Name);
+
+    if (gameMode == "PvP") {
+        info += QString("\n👤 Player 2: %1").arg(player2Name);
+    }
+
+    gameInfoLabel->setText(info);
+    gameInfoLabel->show();
+    startGameButton->show();
+}
+
+void LoginDialog::onSignInClicked()
+{
+    QString username = usernameLineEdit->text().trimmed();
+    QString password = passwordLineEdit->text();
 
     if (username.isEmpty() || password.isEmpty()) {
-        statusLabel->setText("Please fill in all fields");
+        QMessageBox::warning(this, "Input Error", "Please enter both username and password.");
         return;
     }
 
-    QString hashed = QString(QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Sha256).toHex());
-
-    QFile file("users.json");
-    QJsonObject userData;
-    if (file.open(QIODevice::ReadOnly)) {
-        QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
-        userData = doc.object();
-        file.close();
-    }
-
-    if (!userData.contains(username) || userData[username].toString() != hashed) {
-        statusLabel->setText("Invalid username or password");
-        return;
-    }
-
-    currentUsername = username;
-    currentPassword = password;
-    registering = false;
-
-    if (selectedMode == 1) {
-        // Two players mode - need player 2 authentication
-        player2InfoLabel->setText(QString("Player 1: %1\nNow authenticate Player 2").arg(username));
-        stackedWidget->setCurrentWidget(player2AuthTypePage);
+    if (authenticateUser(username, password)) {
+        if (currentStep == 1) {
+            player1Name = username;
+            if (gameMode == "PvP") {
+                showPlayer2Auth();
+            } else {
+                player2Name = "AI";
+                showGameStart();
+            }
+        } else if (currentStep == 2) {
+            if (username == player1Name) {
+                QMessageBox::warning(this, "Error", "Player 2 must be different from Player 1!");
+                return;
+            }
+            player2Name = username;
+            showGameStart();
+        }
     } else {
-        // Player vs AI mode - we're done
-        accept();
+        QMessageBox::warning(this, "Authentication Failed", "Invalid username or password.");
     }
 }
 
-void LoginDialog::handleRegisterClicked() {
-    QString username = regUsernameEdit->text().trimmed();
-    QString password = regPasswordEdit->text();
-    QString confirmPassword = regConfirmPasswordEdit->text();
+void LoginDialog::onNewPlayerClicked()
+{
+    confirmPasswordLabel->show();
+    confirmPasswordLineEdit->show();
 
-    if (username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
-        statusLabel->setText("Please fill in all fields");
-        return;
-    }
+    signInButton->setText("Register");
+    newPlayerButton->hide();
+    nextPlayerButton->show();
+    nextPlayerButton->setText("Register");
 
-    if (password != confirmPassword) {
-        statusLabel->setText("Passwords do not match");
-        return;
-    }
-
-    if (password.length() < 4) {
-        statusLabel->setText("Password must be at least 4 characters");
-        return;
-    }
-
-    QString hashed = QString(QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Sha256).toHex());
-
-    QFile file("users.json");
-    QJsonObject userData;
-    if (file.open(QIODevice::ReadOnly)) {
-        QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
-        userData = doc.object();
-        file.close();
-    }
-
-    if (userData.contains(username)) {
-        statusLabel->setText("Username already exists");
-        return;
-    }
-
-    userData[username] = hashed;
-    if (file.open(QIODevice::WriteOnly)) {
-        QJsonDocument outDoc(userData);
-        file.write(outDoc.toJson());
-        file.close();
-    }
-
-    currentUsername = username;
-    currentPassword = password;
-    registering = true;
-
-    if (selectedMode == 1) {
-        // Two players mode - need player 2 authentication
-        player2InfoLabel->setText(QString("Player 1: %1\nNow authenticate Player 2").arg(username));
-        stackedWidget->setCurrentWidget(player2AuthTypePage);
-    } else {
-        // Player vs AI mode - we're done
-        accept();
-    }
+    disconnect(signInButton, &QPushButton::clicked, this, &LoginDialog::onSignInClicked);
+    connect(signInButton, &QPushButton::clicked, this, &LoginDialog::onNextPlayerClicked);
 }
 
-void LoginDialog::handlePlayer2SignInClicked() {
-    stackedWidget->setCurrentWidget(player2LoginPage);
-}
-
-void LoginDialog::handlePlayer2NewPlayerClicked() {
-    stackedWidget->setCurrentWidget(player2RegisterPage);
-}
-
-void LoginDialog::handlePlayer2LoginClicked() {
-    QString username = player2UsernameEdit->text().trimmed();
-    QString password = player2PasswordEdit->text();
+void LoginDialog::onNextPlayerClicked()
+{
+    QString username = usernameLineEdit->text().trimmed();
+    QString password = passwordLineEdit->text();
+    QString confirmPassword = confirmPasswordLineEdit->text();
 
     if (username.isEmpty() || password.isEmpty()) {
-        statusLabel->setText("Please fill in all fields");
+        QMessageBox::warning(this, "Input Error", "Please enter username and password.");
         return;
     }
 
-    if (username == currentUsername) {
-        statusLabel->setText("Player 2 must use a different username");
+    if (confirmPasswordLineEdit->isVisible() && password != confirmPassword) {
+        QMessageBox::warning(this, "Password Error", "Passwords do not match.");
         return;
     }
 
-    QString hashed = QString(QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Sha256).toHex());
+    if (confirmPasswordLineEdit->isVisible()) {
+        if (registerUser(username, password)) {
+            QMessageBox::information(this, "Success", "User registered successfully!");
 
-    QFile file("users.json");
-    QJsonObject userData;
-    if (file.open(QIODevice::ReadOnly)) {
-        QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
-        userData = doc.object();
-        file.close();
+            confirmPasswordLabel->hide();
+            confirmPasswordLineEdit->hide();
+            signInButton->setText("Sign In");
+            newPlayerButton->show();
+            nextPlayerButton->hide();
+
+            disconnect(signInButton, &QPushButton::clicked, this, &LoginDialog::onNextPlayerClicked);
+            connect(signInButton, &QPushButton::clicked, this, &LoginDialog::onSignInClicked);
+
+            usernameLineEdit->clear();
+            passwordLineEdit->clear();
+        } else {
+            QMessageBox::warning(this, "Registration Failed", "Username already exists.");
+        }
     }
+}
 
-    if (!userData.contains(username) || userData[username].toString() != hashed) {
-        statusLabel->setText("Invalid username or password for Player 2");
-        return;
-    }
-
-    player2Username = username;
+void LoginDialog::onStartGameClicked()
+{
     accept();
 }
 
-void LoginDialog::handlePlayer2RegisterClicked() {
-    QString username = player2RegUsernameEdit->text().trimmed();
-    QString password = player2RegPasswordEdit->text();
-    QString confirmPassword = player2RegConfirmPasswordEdit->text();
+void LoginDialog::onBackClicked()
+{
+    resetToModeSelection();
+}
 
-    if (username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
-        statusLabel->setText("Please fill in all fields");
-        return;
-    }
-
-    if (username == currentUsername) {
-        statusLabel->setText("Player 2 must use a different username");
-        return;
-    }
-
-    if (password != confirmPassword) {
-        statusLabel->setText("Passwords do not match");
-        return;
-    }
-
-    if (password.length() < 4) {
-        statusLabel->setText("Password must be at least 4 characters");
-        return;
-    }
-
-    QString hashed = QString(QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Sha256).toHex());
-
+bool LoginDialog::authenticateUser(const QString& username, const QString& password)
+{
     QFile file("users.json");
-    QJsonObject userData;
+    if (!file.open(QIODevice::ReadOnly)) {
+        return false;
+    }
+
+    QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+    QJsonObject users = doc.object();
+    file.close();
+
+    if (users.contains(username)) {
+        QString storedHash = users[username].toString();
+        QString inputHash = hashPassword(password);
+        return storedHash == inputHash;
+    }
+
+    return false;
+}
+
+bool LoginDialog::registerUser(const QString& username, const QString& password)
+{
+    QFile file("users.json");
+    QJsonObject users;
+
     if (file.open(QIODevice::ReadOnly)) {
         QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
-        userData = doc.object();
+        users = doc.object();
         file.close();
     }
 
-    if (userData.contains(username)) {
-        statusLabel->setText("Username already exists");
-        return;
+    if (users.contains(username)) {
+        return false;
     }
 
-    userData[username] = hashed;
+    users[username] = hashPassword(password);
+
     if (file.open(QIODevice::WriteOnly)) {
-        QJsonDocument outDoc(userData);
-        file.write(outDoc.toJson());
+        QJsonDocument doc(users);
+        file.write(doc.toJson());
         file.close();
+        return true;
     }
 
-    player2Username = username;
-    accept();
+    return false;
 }
 
-QString LoginDialog::getUsername() const {
-    return currentUsername;
-}
-
-QString LoginDialog::getPassword() const {
-    return currentPassword;
-}
-
-QString LoginDialog::getPlayer2Username() const {
-    return player2Username;
-}
-
-int LoginDialog::getSelectedMode() const {
-    return selectedMode;
-}
-
-bool LoginDialog::isRegistering() const {
-    return registering;
+QString LoginDialog::hashPassword(const QString& password)
+{
+    return QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Sha256).toHex();
 }

@@ -4,100 +4,80 @@
 #include <QDialog>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
-#include <QLabel>
-#include <QStackedWidget>
+#include <QComboBox>
+#include <QMessageBox>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QFile>
+#include <QCryptographicHash>
+#include <QPixmap>
+#include <QPalette>
+#include <QResizeEvent>
 
-class LoginDialog : public QDialog {
+class LoginDialog : public QDialog
+{
     Q_OBJECT
 
 public:
     explicit LoginDialog(QWidget *parent = nullptr);
-    QString getUsername() const;
-    QString getPassword() const;
-    QString getPlayer2Username() const;
-    int getSelectedMode() const;
-    bool isRegistering() const;
+    ~LoginDialog() = default;
+
+    QString getPlayer1Name() const { return player1Name; }
+    QString getPlayer2Name() const { return player2Name; }
+    QString getGameMode() const { return gameMode; }
+
+protected:
+    void resizeEvent(QResizeEvent* event) override;
 
 private slots:
-    void handleTwoPlayersClicked();
-    void handlePlayerVsAIClicked();
-    void handleSignInClicked();
-    void handleNewPlayerClicked();
-    void handleLoginClicked();
-    void handleRegisterClicked();
-    void handlePlayer2SignInClicked();
-    void handlePlayer2NewPlayerClicked();
-    void handlePlayer2LoginClicked();
-    void handlePlayer2RegisterClicked();
+    void onModeChanged();
+    void onSignInClicked();
+    void onNewPlayerClicked();
+    void onNextPlayerClicked();
+    void onStartGameClicked();
+    void onBackClicked();
 
 private:
-    QStackedWidget *stackedWidget;
+    void setupUI();
+    void setupStyling();
+    void setBackgroundImage();
+    void resetToModeSelection();
+    void showPlayer1Auth();
+    void showPlayer2Auth();
+    void showGameStart();
 
-    // Mode selection page
-    QWidget *modeSelectionPage;
-    QPushButton *twoPlayersButton;
-    QPushButton *playerVsAIButton;
+    bool authenticateUser(const QString& username, const QString& password);
+    bool registerUser(const QString& username, const QString& password);
+    QString hashPassword(const QString& password);
 
-    // Auth type selection page
-    QWidget *authTypeSelectionPage;
-    QPushButton *signInButton;
-    QPushButton *newPlayerButton;
-    QPushButton *backToModeButton;
+    // UI Components
+    QVBoxLayout* mainLayout;
+    QLabel* titleLabel;
+    QLabel* instructionLabel;
+    QComboBox* modeComboBox;
+    QPushButton* continueButton;
+    QLabel* playerLabel;
+    QLabel* usernameLabel;
+    QLabel* passwordLabel;
+    QLabel* confirmPasswordLabel;
+    QLineEdit* usernameLineEdit;
+    QLineEdit* passwordLineEdit;
+    QLineEdit* confirmPasswordLineEdit;
+    QPushButton* signInButton;
+    QPushButton* newPlayerButton;
+    QPushButton* nextPlayerButton;
+    QPushButton* backButton;
+    QLabel* gameInfoLabel;
+    QPushButton* startGameButton;
 
-    // Login page
-    QWidget *loginPage;
-    QLineEdit *usernameEdit;
-    QLineEdit *passwordEdit;
-    QPushButton *loginButton;
-    QPushButton *backToAuthButton;
-
-    // Register page
-    QWidget *registerPage;
-    QLineEdit *regUsernameEdit;
-    QLineEdit *regPasswordEdit;
-    QLineEdit *regConfirmPasswordEdit;
-    QPushButton *registerButton;
-    QPushButton *backToAuthButton2;
-
-    // Player 2 auth type selection (for two players mode)
-    QWidget *player2AuthTypePage;
-    QPushButton *player2SignInButton;
-    QPushButton *player2NewPlayerButton;
-    QLabel *player2InfoLabel;
-
-    // Player 2 login page
-    QWidget *player2LoginPage;
-    QLineEdit *player2UsernameEdit;
-    QLineEdit *player2PasswordEdit;
-    QPushButton *player2LoginButton;
-    QPushButton *backToPlayer2AuthButton;
-
-    // Player 2 register page
-    QWidget *player2RegisterPage;
-    QLineEdit *player2RegUsernameEdit;
-    QLineEdit *player2RegPasswordEdit;
-    QLineEdit *player2RegConfirmPasswordEdit;
-    QPushButton *player2RegisterButton;
-    QPushButton *backToPlayer2AuthButton2;
-
-    QLabel *statusLabel;
-
-    QString currentUsername;
-    QString currentPassword;
-    QString player2Username;
-    int selectedMode; // 1 = two players, 2 = player vs AI
-    bool registering;
-
-    void setupModeSelectionPage();
-    void setupAuthTypeSelectionPage();
-    void setupLoginPage();
-    void setupRegisterPage();
-    void setupPlayer2AuthTypePage();
-    void setupPlayer2LoginPage();
-    void setupPlayer2RegisterPage();
-    void applyStyles();
+    // Data
+    QString player1Name;
+    QString player2Name;
+    QString gameMode;
+    int currentStep;
 };
 
 #endif // LOGINDIALOG_H
