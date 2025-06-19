@@ -687,7 +687,7 @@ void MainWindow::showGameHistoryDialog()
     )");
 
     // Load game history
-    QFile file("D:/images/gameover_bg.jpg");
+    QFile file("game_history.json");
     QJsonArray userGames;
 
     if (file.open(QIODevice::ReadOnly)) {
