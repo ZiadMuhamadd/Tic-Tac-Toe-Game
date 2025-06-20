@@ -748,7 +748,7 @@ void MainWindow::onGameButtonClicked()
 
             if (gameMode == "PvAI" && currentPlayer == "O") {
                 statusLabel->setText("🤖 AI is thinking...");
-                aiTimer->start(1000);
+                aiTimer->start(500);
             }
         }
     }
@@ -859,7 +859,7 @@ void MainWindow::checkGameEnd()
 
         saveGameHistory(QString(winner));
 
-        QTimer::singleShot(1500, [this, result]() {
+        QTimer::singleShot(500, [this, result]() {
             showGameOverDialog(result);
         });
     }
