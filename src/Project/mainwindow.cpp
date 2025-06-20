@@ -1383,10 +1383,10 @@ void MainWindow::replayGame(const QJsonObject& gameData)
     QString mode = gameData["mode"].toString();
     QString opponent = gameData["opponent"].toString();
 
-    // Create replay dialog
+    // Create larger replay dialog
     QDialog* replayDialog = new QDialog(this);
     replayDialog->setWindowTitle("Game Replay");
-    replayDialog->setFixedSize(400, 300);
+    replayDialog->setFixedSize(600, 450);  // Increased from 400x300 to 600x450
     replayDialog->setModal(true);
 
     // Set background
@@ -1403,8 +1403,8 @@ void MainWindow::replayGame(const QJsonObject& gameData)
     }
 
     QVBoxLayout* layout = new QVBoxLayout(replayDialog);
-    layout->setSpacing(20);
-    layout->setContentsMargins(30, 30, 30, 30);
+    layout->setSpacing(25);  // Increased spacing
+    layout->setContentsMargins(40, 40, 40, 40);  // Larger margins
 
     QLabel* titleLabel = new QLabel("🎬 Game Replay", replayDialog);
     titleLabel->setAlignment(Qt::AlignCenter);
@@ -1415,19 +1415,21 @@ void MainWindow::replayGame(const QJsonObject& gameData)
                                        .arg(moves.size()), replayDialog);
     infoLabel->setAlignment(Qt::AlignCenter);
 
-    QLabel* moveLabel = new QLabel("Press 'Next' to see each move", replayDialog);
+    QLabel* moveLabel = new QLabel("Press 'Next Move' to see each move", replayDialog);
     moveLabel->setAlignment(Qt::AlignCenter);
 
     QString labelStyle = R"(
         QLabel {
+
             color: white;
-            font-size: 16px;
+            font-size: 18px;  /* Increased font size */
             font-weight: bold;
             text-shadow: 0 0 15px #FF1493;
             background: rgba(0, 0, 0, 0.7);
             border: 2px solid #FF1493;
             border-radius: 12px;
-            padding: 15px;
+            padding: 10px;  /* Increased padding */
+            margin: 5px;
         }
     )";
 
@@ -1436,6 +1438,8 @@ void MainWindow::replayGame(const QJsonObject& gameData)
     moveLabel->setStyleSheet(labelStyle);
 
     QHBoxLayout* buttonLayout = new QHBoxLayout();
+    buttonLayout->setSpacing(20);  // Increased spacing between buttons
+
     QPushButton* nextButton = new QPushButton("▶️ Next Move", replayDialog);
     QPushButton* autoButton = new QPushButton("⏩ Auto Play", replayDialog);
     QPushButton* closeButton = new QPushButton("✕ Close", replayDialog);
@@ -1447,14 +1451,23 @@ void MainWindow::replayGame(const QJsonObject& gameData)
                 stop:1 rgba(138, 43, 226, 0.9));
             color: white;
             border: 2px solid #FF1493;
-            border-radius: 12px;
-            font-size: 14px;
+            border-radius: 15px;  /* Increased border radius */
+            font-size: 16px;      /* Increased font size */
             font-weight: bold;
-            padding: 10px 15px;
+            padding: 10px 20px;   /* Increased padding for larger buttons */
+            min-width: 120px;     /* Minimum width to ensure text fits */
+            min-height: 45px;     /* Minimum height for better visibility */
         }
         QPushButton:hover {
             border: 2px solid #00FFFF;
             text-shadow: 0 0 10px #00FFFF;
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                stop:0 rgba(138, 43, 226, 1.0),
+                stop:1 rgba(255, 20, 147, 1.0));
+        }
+        QPushButton:pressed {
+            background: rgba(75, 0, 130, 0.9);
+            border: 2px solid #8A2BE2;
         }
     )";
 
@@ -1464,18 +1477,22 @@ void MainWindow::replayGame(const QJsonObject& gameData)
 
     buttonLayout->addWidget(nextButton);
     buttonLayout->addWidget(autoButton);
-    buttonLayout->addStretch();
+    buttonLayout->addStretch();  // Add stretch to separate close button
     buttonLayout->addWidget(closeButton);
 
     layout->addWidget(titleLabel);
+    layout->addSpacing(10);  // Extra spacing
     layout->addWidget(infoLabel);
+    layout->addSpacing(10);  // Extra spacing
     layout->addWidget(moveLabel);
+    layout->addSpacing(10);  // Extra spacing before buttons
     layout->addLayout(buttonLayout);
+    layout->addStretch();    // Push everything up, leaving space at bottom
 
     int currentMoveIndex = 0;
     QTimer* autoTimer = new QTimer(replayDialog);
     autoTimer->setSingleShot(false);
-    autoTimer->setInterval(1500); // 1.5 seconds between moves
+    autoTimer->setInterval(1000); // 1 seconds between moves
 
     auto playNextMove = [=]() mutable {
         if (currentMoveIndex < moves.size()) {
@@ -1498,7 +1515,7 @@ void MainWindow::replayGame(const QJsonObject& gameData)
             }
 
             currentMoveIndex++;
-            moveLabel->setText(QString("Move %1/%2: Player %3 at (%4,%5)")
+            moveLabel->setText(QString("Move %1/%2: Player %3 at position (%4,%5)")
                                    .arg(currentMoveIndex)
                                    .arg(moves.size())
                                    .arg(player)
@@ -1507,9 +1524,11 @@ void MainWindow::replayGame(const QJsonObject& gameData)
 
             if (currentMoveIndex >= moves.size()) {
                 nextButton->setEnabled(false);
+                nextButton->setText("✅ Complete");
                 autoTimer->stop();
                 autoButton->setText("✅ Replay Complete");
                 autoButton->setEnabled(false);
+                moveLabel->setText("🎉 Replay finished! All moves have been shown.");
             }
         }
     };
@@ -1521,8 +1540,10 @@ void MainWindow::replayGame(const QJsonObject& gameData)
             autoTimer->stop();
             autoButton->setText("⏩ Auto Play");
         } else {
-            autoTimer->start();
-            autoButton->setText("⏸️ Pause");
+            if (currentMoveIndex < moves.size()) {
+                autoTimer->start();
+                autoButton->setText("⏸️ Pause");
+            }
         }
     });
 
