@@ -47,7 +47,7 @@ cmake_ninja_workdir = D$:/Z'/Github/Tic-Tac-Toe-Game/src/Project/build/Desktop_Q
 #############################################
 # Order-only phony target for TicTacToe
 
-build cmake_object_order_depends_target_TicTacToe: phony || TicTacToe_autogen TicTacToe_autogen/mocs_compilation.cpp TicTacToe_autogen/timestamp TicTacToe_autogen_timestamp_deps moc_AIPlayer.cpp moc_Board.cpp moc_LoginDialog.cpp moc_mainwindow.cpp
+build cmake_object_order_depends_target_TicTacToe: phony || TicTacToe_autogen TicTacToe_autogen/mocs_compilation.cpp TicTacToe_autogen/timestamp TicTacToe_autogen_timestamp_deps moc_AIPlayer.cpp moc_Board.cpp moc_mainwindow.cpp
 
 build CMakeFiles/TicTacToe.dir/TicTacToe_autogen/mocs_compilation.cpp.obj: CXX_COMPILER__TicTacToe_unscanned_Debug D$:/Z'/Github/Tic-Tac-Toe-Game/src/Project/build/Desktop_Qt_6_9_1_MinGW_64_bit-Debug/TicTacToe_autogen/mocs_compilation.cpp || cmake_object_order_depends_target_TicTacToe
   DEFINES = -DMINGW_HAS_SECURE_API=1 -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NEEDS_QMAIN -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
@@ -60,14 +60,6 @@ build CMakeFiles/TicTacToe.dir/TicTacToe_autogen/mocs_compilation.cpp.obj: CXX_C
 build CMakeFiles/TicTacToe.dir/main.cpp.obj: CXX_COMPILER__TicTacToe_unscanned_Debug D$:/Z'/Github/Tic-Tac-Toe-Game/src/Project/main.cpp || cmake_object_order_depends_target_TicTacToe
   DEFINES = -DMINGW_HAS_SECURE_API=1 -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NEEDS_QMAIN -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
   DEP_FILE = CMakeFiles\TicTacToe.dir\main.cpp.obj.d
-  FLAGS = -DQT_QML_DEBUG -g -std=gnu++17 -fdiagnostics-color=always
-  INCLUDES = -I"D:/Z'/Github/Tic-Tac-Toe-Game/src/Project/build/Desktop_Qt_6_9_1_MinGW_64_bit-Debug" -I"D:/Z'/Github/Tic-Tac-Toe-Game/src/Project" -I"D:/Z'/Github/Tic-Tac-Toe-Game/src/Project/build/Desktop_Qt_6_9_1_MinGW_64_bit-Debug/TicTacToe_autogen/include" -isystem C:/Qt/6.9.1/mingw_64/include/QtCore -isystem C:/Qt/6.9.1/mingw_64/include -isystem C:/Qt/6.9.1/mingw_64/mkspecs/win32-g++ -isystem C:/Qt/6.9.1/mingw_64/include/QtWidgets -isystem C:/Qt/6.9.1/mingw_64/include/QtGui
-  OBJECT_DIR = CMakeFiles\TicTacToe.dir
-  OBJECT_FILE_DIR = CMakeFiles\TicTacToe.dir
-
-build CMakeFiles/TicTacToe.dir/LoginDialog.cpp.obj: CXX_COMPILER__TicTacToe_unscanned_Debug D$:/Z'/Github/Tic-Tac-Toe-Game/src/Project/LoginDialog.cpp || cmake_object_order_depends_target_TicTacToe
-  DEFINES = -DMINGW_HAS_SECURE_API=1 -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NEEDS_QMAIN -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
-  DEP_FILE = CMakeFiles\TicTacToe.dir\LoginDialog.cpp.obj.d
   FLAGS = -DQT_QML_DEBUG -g -std=gnu++17 -fdiagnostics-color=always
   INCLUDES = -I"D:/Z'/Github/Tic-Tac-Toe-Game/src/Project/build/Desktop_Qt_6_9_1_MinGW_64_bit-Debug" -I"D:/Z'/Github/Tic-Tac-Toe-Game/src/Project" -I"D:/Z'/Github/Tic-Tac-Toe-Game/src/Project/build/Desktop_Qt_6_9_1_MinGW_64_bit-Debug/TicTacToe_autogen/include" -isystem C:/Qt/6.9.1/mingw_64/include/QtCore -isystem C:/Qt/6.9.1/mingw_64/include -isystem C:/Qt/6.9.1/mingw_64/mkspecs/win32-g++ -isystem C:/Qt/6.9.1/mingw_64/include/QtWidgets -isystem C:/Qt/6.9.1/mingw_64/include/QtGui
   OBJECT_DIR = CMakeFiles\TicTacToe.dir
@@ -92,14 +84,6 @@ build CMakeFiles/TicTacToe.dir/Board.cpp.obj: CXX_COMPILER__TicTacToe_unscanned_
 build CMakeFiles/TicTacToe.dir/AIPlayer.cpp.obj: CXX_COMPILER__TicTacToe_unscanned_Debug D$:/Z'/Github/Tic-Tac-Toe-Game/src/Project/AIPlayer.cpp || cmake_object_order_depends_target_TicTacToe
   DEFINES = -DMINGW_HAS_SECURE_API=1 -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NEEDS_QMAIN -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
   DEP_FILE = CMakeFiles\TicTacToe.dir\AIPlayer.cpp.obj.d
-  FLAGS = -DQT_QML_DEBUG -g -std=gnu++17 -fdiagnostics-color=always
-  INCLUDES = -I"D:/Z'/Github/Tic-Tac-Toe-Game/src/Project/build/Desktop_Qt_6_9_1_MinGW_64_bit-Debug" -I"D:/Z'/Github/Tic-Tac-Toe-Game/src/Project" -I"D:/Z'/Github/Tic-Tac-Toe-Game/src/Project/build/Desktop_Qt_6_9_1_MinGW_64_bit-Debug/TicTacToe_autogen/include" -isystem C:/Qt/6.9.1/mingw_64/include/QtCore -isystem C:/Qt/6.9.1/mingw_64/include -isystem C:/Qt/6.9.1/mingw_64/mkspecs/win32-g++ -isystem C:/Qt/6.9.1/mingw_64/include/QtWidgets -isystem C:/Qt/6.9.1/mingw_64/include/QtGui
-  OBJECT_DIR = CMakeFiles\TicTacToe.dir
-  OBJECT_FILE_DIR = CMakeFiles\TicTacToe.dir
-
-build CMakeFiles/TicTacToe.dir/moc_LoginDialog.cpp.obj: CXX_COMPILER__TicTacToe_unscanned_Debug D$:/Z'/Github/Tic-Tac-Toe-Game/src/Project/build/Desktop_Qt_6_9_1_MinGW_64_bit-Debug/moc_LoginDialog.cpp || cmake_object_order_depends_target_TicTacToe
-  DEFINES = -DMINGW_HAS_SECURE_API=1 -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NEEDS_QMAIN -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
-  DEP_FILE = CMakeFiles\TicTacToe.dir\moc_LoginDialog.cpp.obj.d
   FLAGS = -DQT_QML_DEBUG -g -std=gnu++17 -fdiagnostics-color=always
   INCLUDES = -I"D:/Z'/Github/Tic-Tac-Toe-Game/src/Project/build/Desktop_Qt_6_9_1_MinGW_64_bit-Debug" -I"D:/Z'/Github/Tic-Tac-Toe-Game/src/Project" -I"D:/Z'/Github/Tic-Tac-Toe-Game/src/Project/build/Desktop_Qt_6_9_1_MinGW_64_bit-Debug/TicTacToe_autogen/include" -isystem C:/Qt/6.9.1/mingw_64/include/QtCore -isystem C:/Qt/6.9.1/mingw_64/include -isystem C:/Qt/6.9.1/mingw_64/mkspecs/win32-g++ -isystem C:/Qt/6.9.1/mingw_64/include/QtWidgets -isystem C:/Qt/6.9.1/mingw_64/include/QtGui
   OBJECT_DIR = CMakeFiles\TicTacToe.dir
@@ -137,7 +121,7 @@ build CMakeFiles/TicTacToe.dir/moc_AIPlayer.cpp.obj: CXX_COMPILER__TicTacToe_uns
 #############################################
 # Link the executable TicTacToe.exe
 
-build TicTacToe.exe: CXX_EXECUTABLE_LINKER__TicTacToe_Debug CMakeFiles/TicTacToe.dir/TicTacToe_autogen/mocs_compilation.cpp.obj CMakeFiles/TicTacToe.dir/main.cpp.obj CMakeFiles/TicTacToe.dir/LoginDialog.cpp.obj CMakeFiles/TicTacToe.dir/mainwindow.cpp.obj CMakeFiles/TicTacToe.dir/Board.cpp.obj CMakeFiles/TicTacToe.dir/AIPlayer.cpp.obj CMakeFiles/TicTacToe.dir/moc_LoginDialog.cpp.obj CMakeFiles/TicTacToe.dir/moc_mainwindow.cpp.obj CMakeFiles/TicTacToe.dir/moc_Board.cpp.obj CMakeFiles/TicTacToe.dir/moc_AIPlayer.cpp.obj | C$:/Qt/6.9.1/mingw_64/lib/libQt6Widgets.a C$:/Qt/6.9.1/mingw_64/lib/libQt6Gui.a C$:/Qt/6.9.1/mingw_64/lib/libQt6Core.a C$:/Qt/6.9.1/mingw_64/lib/libQt6EntryPoint.a || TicTacToe_autogen TicTacToe_autogen_timestamp_deps
+build TicTacToe.exe: CXX_EXECUTABLE_LINKER__TicTacToe_Debug CMakeFiles/TicTacToe.dir/TicTacToe_autogen/mocs_compilation.cpp.obj CMakeFiles/TicTacToe.dir/main.cpp.obj CMakeFiles/TicTacToe.dir/mainwindow.cpp.obj CMakeFiles/TicTacToe.dir/Board.cpp.obj CMakeFiles/TicTacToe.dir/AIPlayer.cpp.obj CMakeFiles/TicTacToe.dir/moc_mainwindow.cpp.obj CMakeFiles/TicTacToe.dir/moc_Board.cpp.obj CMakeFiles/TicTacToe.dir/moc_AIPlayer.cpp.obj | C$:/Qt/6.9.1/mingw_64/lib/libQt6Widgets.a C$:/Qt/6.9.1/mingw_64/lib/libQt6Gui.a C$:/Qt/6.9.1/mingw_64/lib/libQt6Core.a C$:/Qt/6.9.1/mingw_64/lib/libQt6EntryPoint.a || TicTacToe_autogen TicTacToe_autogen_timestamp_deps
   FLAGS = -DQT_QML_DEBUG -g
   LINK_FLAGS = -mwindows
   LINK_LIBRARIES = C:/Qt/6.9.1/mingw_64/lib/libQt6Widgets.a  C:/Qt/6.9.1/mingw_64/lib/libQt6Gui.a  C:/Qt/6.9.1/mingw_64/lib/libQt6Core.a  -lmpr  -luserenv  -lmingw32  C:/Qt/6.9.1/mingw_64/lib/libQt6EntryPoint.a  -lshell32  -ld3d11  -ldxgi  -ldxguid  -ld3d12  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
@@ -183,15 +167,6 @@ build TicTacToe_autogen_timestamp_deps: phony
 # Utility command for TicTacToe_autogen
 
 build TicTacToe_autogen: phony CMakeFiles/TicTacToe_autogen TicTacToe_autogen/timestamp TicTacToe_autogen/mocs_compilation.cpp TicTacToe_autogen_timestamp_deps
-
-
-#############################################
-# Custom command for moc_LoginDialog.cpp
-
-build moc_LoginDialog.cpp | ${cmake_ninja_workdir}moc_LoginDialog.cpp: CUSTOM_COMMAND D$:/Z'/Github/Tic-Tac-Toe-Game/src/Project/LoginDialog.h || TicTacToe_autogen TicTacToe_autogen_timestamp_deps
-  COMMAND = C:\WINDOWS\system32\cmd.exe /C "cd /D "D:\Z'\Github\Tic-Tac-Toe-Game\src\Project\build\Desktop_Qt_6_9_1_MinGW_64_bit-Debug" && C:\Qt\6.9.1\mingw_64\bin\moc.exe "@D:/Z'/Github/Tic-Tac-Toe-Game/src/Project/build/Desktop_Qt_6_9_1_MinGW_64_bit-Debug/moc_LoginDialog.cpp_parameters""
-  DESC = Generating moc_LoginDialog.cpp
-  restat = 1
 
 
 #############################################

@@ -19,7 +19,8 @@
 			"include",
 			"find_package",
 			"find_dependency",
-			"_qt_internal_find_qt_dependencies"
+			"_qt_internal_find_qt_dependencies",
+			"target_sources"
 		],
 		"files" : 
 		[
@@ -46,13 +47,13 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 15,
+				"line" : 32,
 				"parent" : 0
 			},
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 28,
+				"line" : 35,
 				"parent" : 0
 			},
 			{
@@ -218,6 +219,12 @@
 				"file" : 11,
 				"line" : 61,
 				"parent" : 32
+			},
+			{
+				"command" : 7,
+				"file" : 0,
+				"line" : 39,
+				"parent" : 0
 			}
 		]
 	},
@@ -280,6 +287,12 @@
 			"includes" : 
 			[
 				{
+					"path" : "D:/Z'/Github/Tic-Tac-Toe-Game/src/Project/build/Desktop_Qt_6_9_1_MinGW_64_bit-Debug"
+				},
+				{
+					"path" : "D:/Z'/Github/Tic-Tac-Toe-Game/src/Project"
+				},
+				{
 					"backtrace" : 0,
 					"path" : "D:/Z'/Github/Tic-Tac-Toe-Game/src/Project/build/Desktop_Qt_6_9_1_MinGW_64_bit-Debug/TicTacToe_autogen/include"
 				},
@@ -324,9 +337,11 @@
 				0,
 				1,
 				2,
+				3,
 				4,
-				6,
-				8
+				8,
+				9,
+				10
 			]
 		}
 	],
@@ -436,33 +451,37 @@
 				0,
 				1,
 				2,
+				3,
 				4,
-				6,
-				8
+				8,
+				9,
+				10
 			]
 		},
 		{
 			"name" : "Header Files",
 			"sourceIndexes" : 
 			[
-				3,
 				5,
-				7,
-				9
+				6,
+				7
 			]
 		},
 		{
 			"name" : "",
 			"sourceIndexes" : 
 			[
-				10
+				11
 			]
 		},
 		{
 			"name" : "CMake Rules",
 			"sourceIndexes" : 
 			[
-				11
+				12,
+				13,
+				14,
+				15
 			]
 		}
 	],
@@ -484,24 +503,8 @@
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
-			"path" : "LoginDialog.cpp",
-			"sourceGroupIndex" : 0
-		},
-		{
-			"backtrace" : 1,
-			"path" : "LoginDialog.h",
-			"sourceGroupIndex" : 1
-		},
-		{
-			"backtrace" : 1,
-			"compileGroupIndex" : 0,
 			"path" : "mainwindow.cpp",
 			"sourceGroupIndex" : 0
-		},
-		{
-			"backtrace" : 1,
-			"path" : "mainwindow.h",
-			"sourceGroupIndex" : 1
 		},
 		{
 			"backtrace" : 1,
@@ -511,14 +514,19 @@
 		},
 		{
 			"backtrace" : 1,
-			"path" : "Board.h",
+			"compileGroupIndex" : 0,
+			"path" : "AIPlayer.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"path" : "mainwindow.h",
 			"sourceGroupIndex" : 1
 		},
 		{
 			"backtrace" : 1,
-			"compileGroupIndex" : 0,
-			"path" : "AIPlayer.cpp",
-			"sourceGroupIndex" : 0
+			"path" : "Board.h",
+			"sourceGroupIndex" : 1
 		},
 		{
 			"backtrace" : 1,
@@ -526,10 +534,49 @@
 			"sourceGroupIndex" : 1
 		},
 		{
+			"backtrace" : 34,
+			"compileGroupIndex" : 0,
+			"isGenerated" : true,
+			"path" : "build/Desktop_Qt_6_9_1_MinGW_64_bit-Debug/moc_mainwindow.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 34,
+			"compileGroupIndex" : 0,
+			"isGenerated" : true,
+			"path" : "build/Desktop_Qt_6_9_1_MinGW_64_bit-Debug/moc_Board.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 34,
+			"compileGroupIndex" : 0,
+			"isGenerated" : true,
+			"path" : "build/Desktop_Qt_6_9_1_MinGW_64_bit-Debug/moc_AIPlayer.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
 			"backtrace" : 0,
 			"isGenerated" : true,
 			"path" : "build/Desktop_Qt_6_9_1_MinGW_64_bit-Debug/TicTacToe_autogen/timestamp",
 			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "build/Desktop_Qt_6_9_1_MinGW_64_bit-Debug/moc_mainwindow.cpp.rule",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "build/Desktop_Qt_6_9_1_MinGW_64_bit-Debug/moc_Board.cpp.rule",
+			"sourceGroupIndex" : 3
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "build/Desktop_Qt_6_9_1_MinGW_64_bit-Debug/moc_AIPlayer.cpp.rule",
+			"sourceGroupIndex" : 3
 		},
 		{
 			"backtrace" : 0,

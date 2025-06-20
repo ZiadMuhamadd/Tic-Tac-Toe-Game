@@ -1,39 +1,226 @@
 #include "MainWindow.h"
-#include "LoginDialog.h"
+#include <QApplication>
+#include <QScreen>
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), currentPlayer("X"), gameActive(true)
+    : QMainWindow(parent), currentPlayer("X"), gameActive(true), currentStep(0), isFullScreen(true)
 {
-    setWindowTitle("Tic Tac Toe - Synthwave Edition");
-    setMinimumSize(800, 900);
-    resize(1000, 1100);
+    // Initialize pointers to nullptr first
+    stackedWidget = nullptr;
+    loginWidget = nullptr;
+    gameWidget = nullptr;
+    board = nullptr;
+    aiPlayer = nullptr;
+    aiTimer = nullptr;
 
+    setWindowTitle("Tic Tac Toe");
+
+    // Initialize objects safely
     board = new Board();
     aiPlayer = new AIPlayer();
     aiTimer = new QTimer(this);
     aiTimer->setSingleShot(true);
 
+    // Setup UI BEFORE setting window properties to avoid early resize events
     setupUI();
-    setBackgroundImage();
     setupStyling();
-    setupToolbar();
+
+    // NOW set window properties (this may trigger resize events)
+    setWindowState(Qt::WindowFullScreen);
+    setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
+
+    QScreen *screen = QApplication::primaryScreen();
+    QRect screenGeometry = screen->geometry();
+    setGeometry(screenGeometry);
+
+    // Set background after everything is initialized
+    setBackgroundImage();
+
+    // Start with login view
+    if (stackedWidget && loginWidget) {
+        stackedWidget->setCurrentWidget(loginWidget);
+        resetToModeSelection();
+    }
 
     connect(aiTimer, &QTimer::timeout, this, &MainWindow::makeAIMove);
 }
+
+
 void MainWindow::setupUI()
 {
-    centralWidget = new QWidget(this);
-    setCentralWidget(centralWidget);
+    // Create stacked widget as central widget
+    stackedWidget = new QStackedWidget(this);
+    setCentralWidget(stackedWidget);
 
-    // Create main horizontal layout
-    QHBoxLayout* mainHorizontalLayout = new QHBoxLayout(centralWidget);
-    mainHorizontalLayout->setSpacing(20);
-    mainHorizontalLayout->setContentsMargins(20, 20, 20, 20);
+    // Create login and game widgets
+    loginWidget = new QWidget();
+    gameWidget = new QWidget();
+
+    stackedWidget->addWidget(loginWidget);
+    stackedWidget->addWidget(gameWidget);
+
+    setupLoginView();
+    setupGameView();
+    updateLayoutForMode();
+}
+
+void MainWindow::setupLoginView()
+{
+    loginMainLayout = new QVBoxLayout(loginWidget);
+
+    // Title
+    loginTitleLabel = new QLabel("🎮 TIC TAC TOE 🎮", loginWidget);
+    loginTitleLabel->setAlignment(Qt::AlignCenter);
+    loginTitleLabel->setObjectName("titleLabel");
+
+    // Instruction
+    instructionLabel = new QLabel("Welcome! Choose your game mode:", loginWidget);
+    instructionLabel->setAlignment(Qt::AlignCenter);
+    instructionLabel->setObjectName("instructionLabel");
+
+    // Mode selection
+    modeComboBox = new QComboBox(loginWidget);
+    modeComboBox->addItem("🎯 Player vs Player");
+    modeComboBox->addItem("🤖 Player vs AI");
+    modeComboBox->setObjectName("modeComboBox");
+
+    continueButton = new QPushButton("Continue", loginWidget);
+    continueButton->setObjectName("primaryButton");
+
+    // Player info
+    playerLabel = new QLabel(loginWidget);
+    playerLabel->setAlignment(Qt::AlignCenter);
+    playerLabel->setObjectName("playerLabel");
+
+    // Authentication fields
+    usernameLabel = new QLabel("Username:", loginWidget);
+    usernameLabel->setObjectName("fieldLabel");
+
+    usernameLineEdit = new QLineEdit(loginWidget);
+    usernameLineEdit->setObjectName("inputField");
+    usernameLineEdit->setPlaceholderText("Enter your username");
+
+    passwordLabel = new QLabel("Password:", loginWidget);
+    passwordLabel->setObjectName("fieldLabel");
+
+    passwordLineEdit = new QLineEdit(loginWidget);
+    passwordLineEdit->setObjectName("inputField");
+    passwordLineEdit->setEchoMode(QLineEdit::Password);
+    passwordLineEdit->setPlaceholderText("Enter your password");
+
+    confirmPasswordLabel = new QLabel("Confirm Password:", loginWidget);
+    confirmPasswordLabel->setObjectName("fieldLabel");
+
+    confirmPasswordLineEdit = new QLineEdit(loginWidget);
+    confirmPasswordLineEdit->setObjectName("inputField");
+    confirmPasswordLineEdit->setEchoMode(QLineEdit::Password);
+    confirmPasswordLineEdit->setPlaceholderText("Confirm your password");
+
+    // Buttons
+    signInButton = new QPushButton("Sign In", loginWidget);
+    signInButton->setObjectName("primaryButton");
+
+    newPlayerButton = new QPushButton("New Player", loginWidget);
+    newPlayerButton->setObjectName("secondaryButton");
+
+    nextPlayerButton = new QPushButton("Next Player", loginWidget);
+    nextPlayerButton->setObjectName("primaryButton");
+
+    backButton = new QPushButton("← Back", loginWidget);
+    backButton->setObjectName("backButton");
+
+    // Control buttons
+    exitButton = new QPushButton("✕ Exit", loginWidget);
+    exitButton->setObjectName("exitButton");
+
+    fullScreenToggleButton = new QPushButton("⛶ Window", loginWidget);
+    fullScreenToggleButton->setObjectName("toggleButton");
+    fullScreenToggleButton->setToolTip("Press F11 or click to toggle full screen");
+
+    // Game start
+    gameInfoLabel = new QLabel(loginWidget);
+    gameInfoLabel->setAlignment(Qt::AlignCenter);
+    gameInfoLabel->setObjectName("gameInfoLabel");
+
+    startGameButton = new QPushButton("🚀 START GAME", loginWidget);
+    startGameButton->setObjectName("startButton");
+
+    // Create centered container widget
+    QWidget* centerWidget = new QWidget(loginWidget);
+    centerWidget->setObjectName("centerWidget");
+    centerWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+
+    QVBoxLayout* centerLayout = new QVBoxLayout(centerWidget);
+    centerLayout->setSpacing(15);
+    centerLayout->setContentsMargins(20, 20, 20, 20);
+
+    // Add widgets to center layout
+    centerLayout->addWidget(loginTitleLabel);
+    centerLayout->addWidget(instructionLabel);
+    centerLayout->addWidget(modeComboBox);
+    centerLayout->addWidget(continueButton);
+    centerLayout->addWidget(playerLabel);
+    centerLayout->addWidget(usernameLabel);
+    centerLayout->addWidget(usernameLineEdit);
+    centerLayout->addWidget(passwordLabel);
+    centerLayout->addWidget(passwordLineEdit);
+    centerLayout->addWidget(confirmPasswordLabel);
+    centerLayout->addWidget(confirmPasswordLineEdit);
+
+    QHBoxLayout* buttonLayout = new QHBoxLayout();
+    buttonLayout->setSpacing(15);
+    buttonLayout->addWidget(backButton);
+    buttonLayout->addStretch();
+    buttonLayout->addWidget(signInButton);
+    buttonLayout->addWidget(newPlayerButton);
+    buttonLayout->addWidget(nextPlayerButton);
+    centerLayout->addLayout(buttonLayout);
+
+    centerLayout->addSpacing(20);
+    centerLayout->addWidget(gameInfoLabel);
+    centerLayout->addWidget(startGameButton);
+
+    // Create top control buttons layout
+    QHBoxLayout* topControlLayout = new QHBoxLayout();
+    topControlLayout->setContentsMargins(0, 10, 10, 0);
+    topControlLayout->addStretch();
+    topControlLayout->addWidget(fullScreenToggleButton);
+    topControlLayout->addWidget(exitButton);
+
+    // Add everything to main layout
+    loginMainLayout->addLayout(topControlLayout);
+    loginMainLayout->addSpacing(20);
+
+    // Center the main content horizontally
+    QHBoxLayout* horizontalCenterLayout = new QHBoxLayout();
+    horizontalCenterLayout->addStretch();
+    horizontalCenterLayout->addWidget(centerWidget);
+    horizontalCenterLayout->addStretch();
+
+    loginMainLayout->addLayout(horizontalCenterLayout);
+    loginMainLayout->addSpacing(40);
+
+    // Connect login signals
+    connect(continueButton, &QPushButton::clicked, this, &MainWindow::onModeChanged);
+    connect(signInButton, &QPushButton::clicked, this, &MainWindow::onSignInClicked);
+    connect(newPlayerButton, &QPushButton::clicked, this, &MainWindow::onNewPlayerClicked);
+    connect(nextPlayerButton, &QPushButton::clicked, this, &MainWindow::onNextPlayerClicked);
+    connect(startGameButton, &QPushButton::clicked, this, &MainWindow::onStartGameClicked);
+    connect(backButton, &QPushButton::clicked, this, &MainWindow::onBackClicked);
+    connect(exitButton, &QPushButton::clicked, this, &MainWindow::onExitClicked);
+    connect(fullScreenToggleButton, &QPushButton::clicked, this, &MainWindow::toggleFullScreen);
+}
+
+void MainWindow::setupGameView()
+{
+    gameMainLayout = new QHBoxLayout(gameWidget);
+    gameMainLayout->setSpacing(20);
+    gameMainLayout->setContentsMargins(20, 20, 20, 20);
 
     // Create left panel for banners
-    QWidget* leftPanel = new QWidget(this);
+    leftPanel = new QWidget(gameWidget);
     leftPanel->setObjectName("leftPanel");
-    leftPanel->setFixedWidth(350);  // Fixed width for left panel
+    leftPanel->setFixedWidth(350);
     leftPanel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
 
     QVBoxLayout* leftLayout = new QVBoxLayout(leftPanel);
@@ -41,19 +228,19 @@ void MainWindow::setupUI()
     leftLayout->setContentsMargins(10, 10, 10, 10);
 
     // Title (more square-shaped)
-    titleLabel = new QLabel("🎮 TIC TAC TOE 🎮", this);
+    titleLabel = new QLabel("🎮 TIC TAC TOE 🎮", leftPanel);
     titleLabel->setAlignment(Qt::AlignCenter);
-    titleLabel->setObjectName("titleLabel");
+    titleLabel->setObjectName("gameTitleLabel");
     titleLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 
     // Players info (more square-shaped)
-    playersLabel = new QLabel(this);
+    playersLabel = new QLabel(leftPanel);
     playersLabel->setAlignment(Qt::AlignCenter);
     playersLabel->setObjectName("playersLabel");
     playersLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 
     // Status (more square-shaped)
-    statusLabel = new QLabel("Player X's Turn", this);
+    statusLabel = new QLabel("Player X's Turn", leftPanel);
     statusLabel->setAlignment(Qt::AlignCenter);
     statusLabel->setObjectName("statusLabel");
     statusLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
@@ -62,10 +249,10 @@ void MainWindow::setupUI()
     leftLayout->addWidget(titleLabel);
     leftLayout->addWidget(playersLabel);
     leftLayout->addWidget(statusLabel);
-    leftLayout->addStretch();  // Push banners to top
+    leftLayout->addStretch();
 
     // Create right panel for game grid
-    QWidget* rightPanel = new QWidget(this);
+    rightPanel = new QWidget(gameWidget);
     rightPanel->setObjectName("rightPanel");
     rightPanel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
@@ -74,6 +261,7 @@ void MainWindow::setupUI()
 
     // Game grid
     setupGameGrid();
+    setupToolbar();
 
     // Center the grid vertically and horizontally in right panel
     QHBoxLayout* gridCenterLayout = new QHBoxLayout();
@@ -86,32 +274,30 @@ void MainWindow::setupUI()
     rightLayout->addStretch();
 
     // Add panels to main layout
-    mainHorizontalLayout->addWidget(leftPanel);
-    mainHorizontalLayout->addWidget(rightPanel);
+    gameMainLayout->addWidget(leftPanel);
+    gameMainLayout->addWidget(rightPanel);
 }
 
 void MainWindow::setupGameGrid()
 {
-    gameGridWidget = new QWidget(this);
+    gameGridWidget = new QWidget(rightPanel);
     gameGridWidget->setObjectName("gameGridWidget");
 
-    // Now we can make the grid much larger since we have more vertical space
     gameGridWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-    gameGridWidget->setMinimumSize(500, 500);  // Larger minimum size
-    gameGridWidget->setMaximumSize(800, 800);  // Much larger maximum size
+    gameGridWidget->setMinimumSize(500, 500);
+    gameGridWidget->setMaximumSize(800, 800);
 
     gameGridLayout = new QGridLayout(gameGridWidget);
-    gameGridLayout->setSpacing(20);  // Increased spacing
+    gameGridLayout->setSpacing(20);
     gameGridLayout->setContentsMargins(30, 30, 30, 30);
 
     for (int i = 0; i < 3; ++i) {
         for (int j = 0; j < 3; ++j) {
-            gameButtons[i][j] = new QPushButton("", this);
+            gameButtons[i][j] = new QPushButton("", gameGridWidget);
             gameButtons[i][j]->setObjectName("gameButton");
 
-            // Can make buttons larger now with more space
-            gameButtons[i][j]->setMinimumSize(140, 140);  // Larger buttons
-            gameButtons[i][j]->setMaximumSize(200, 200);  // Larger maximum
+            gameButtons[i][j]->setMinimumSize(140, 140);
+            gameButtons[i][j]->setMaximumSize(200, 200);
 
             gameButtons[i][j]->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
@@ -129,157 +315,6 @@ void MainWindow::setupGameGrid()
         gameGridLayout->setColumnStretch(i, 1);
     }
 }
-
-void MainWindow::setupStyling()
-{
-    QString style = R"(
-        QMainWindow {
-            background-color: rgba(0, 0, 0, 0.1);
-        }
-
-        #leftPanel {
-            background: rgba(0, 0, 0, 0.3);
-            border: 2px solid #8A2BE2;
-            border-radius: 15px;
-        }
-
-        #rightPanel {
-            background: rgba(0, 0, 0, 0.1);
-        }
-
-        #titleLabel {
-            color: #00FFFF;
-            font-size: 20px;  /* Adjusted for square format */
-            font-weight: bold;
-            text-shadow: 0 0 15px #00FFFF, 0 0 20px #00FFFF;
-            background: rgba(0, 0, 0, 0.8);
-            border: 2px solid #00FFFF;
-            border-radius: 15px;
-            padding: 20px;  /* More square padding */
-            margin: 5px;
-            min-height: 60px;  /* Square-ish height */
-        }
-
-        #playersLabel {
-            color: #FF1493;
-            font-size: 16px;  /* Adjusted for square format */
-            font-weight: bold;
-            text-shadow: 0 0 8px #FF1493;
-            background: rgba(0, 0, 0, 0.7);
-            border: 2px solid #FF1493;
-            border-radius: 15px;
-            padding: 20px;  /* More square padding */
-            margin: 5px;
-            min-height: 60px;  /* Square-ish height */
-        }
-
-        #statusLabel {
-            color: #00FFFF;
-            font-size: 18px;  /* Adjusted for square format */
-            font-weight: bold;
-            text-shadow: 0 0 10px #00FFFF;
-            background: rgba(0, 0, 0, 0.8);
-            border: 2px solid #00FFFF;
-            border-radius: 15px;
-            padding: 20px;  /* More square padding */
-            margin: 5px;
-            min-height: 60px;  /* Square-ish height */
-        }
-
-        #gameGridWidget {
-            background: rgba(0, 0, 0, 0.6);
-            border: 4px solid #8A2BE2;  /* Thicker border for prominence */
-            border-radius: 25px;
-        }
-
-        #gameButton {
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-                stop:0 rgba(0, 0, 0, 0.8),
-                stop:1 rgba(75, 0, 130, 0.6));
-            border: 3px solid #00FFFF;
-            border-radius: 15px;
-            color: white;
-            font-size: 56px;  /* Larger font for bigger buttons */
-            font-weight: bold;
-            text-shadow: 0 0 15px currentColor;
-        }
-
-        #gameButton:hover {
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-                stop:0 rgba(255, 20, 147, 0.4),
-                stop:1 rgba(138, 43, 226, 0.4));
-            border: 4px solid #FF1493;  /* Thicker hover border */
-            text-shadow: 0 0 25px currentColor;
-        }
-
-        #gameButton:pressed {
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-                stop:0 rgba(138, 43, 226, 0.8),
-                stop:1 rgba(75, 0, 130, 0.8));
-            border: 3px solid #8A2BE2;
-        }
-
-        QToolBar {
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                stop:0 rgba(138, 43, 226, 0.9),
-                stop:0.5 rgba(255, 20, 147, 0.9),
-                stop:1 rgba(138, 43, 226, 0.9));
-            border: none;
-            spacing: 15px;
-            padding: 8px;
-        }
-
-        QToolButton {
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            border: 2px solid #00FFFF;
-            border-radius: 8px;
-            padding: 8px 15px;
-            font-weight: bold;
-            font-size: 12px;
-            text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
-        }
-
-        QToolButton:hover {
-            background: rgba(255, 20, 147, 0.8);
-            border: 2px solid #FF1493;
-            text-shadow: 0 0 10px #FF1493;
-        }
-
-        QToolButton:pressed {
-            background: rgba(138, 43, 226, 0.8);
-            border: 2px solid #8A2BE2;
-        }
-
-        QStatusBar {
-            background: rgba(0, 0, 0, 0.8);
-            color: #00FFFF;
-            border-top: 2px solid #00FFFF;
-        }
-    )";
-
-    this->setStyleSheet(style);
-}
-
-
-
-void MainWindow::setBackgroundImage()
-{
-    QPixmap gameBackground("D:/images/game_bg.jpg"); // Change this path to your image location
-
-    if (!gameBackground.isNull()) {
-        gameBackground = gameBackground.scaled(this->size(),
-                                               Qt::KeepAspectRatioByExpanding,
-                                               Qt::SmoothTransformation);
-
-        QPalette palette;
-        palette.setBrush(QPalette::Window, gameBackground);
-        this->setPalette(palette);
-        this->setAutoFillBackground(true);
-    }
-}
-
-
 
 void MainWindow::setupToolbar()
 {
@@ -302,18 +337,262 @@ void MainWindow::setupToolbar()
     connect(logoutAction, &QAction::triggered, this, &MainWindow::onLogoutClicked);
 }
 
-void MainWindow::resizeEvent(QResizeEvent* event)
+void MainWindow::updateLayoutForMode()
 {
-    QMainWindow::resizeEvent(event);
+    if (isFullScreen) {
+        loginMainLayout->setSpacing(20);
+        loginMainLayout->setContentsMargins(60, 40, 60, 40);
+        if (findChild<QWidget*>("centerWidget")) {
+            findChild<QWidget*>("centerWidget")->setMaximumWidth(800);
+        }
+    } else {
+        loginMainLayout->setSpacing(15);
+        loginMainLayout->setContentsMargins(30, 20, 30, 20);
+        if (findChild<QWidget*>("centerWidget")) {
+            findChild<QWidget*>("centerWidget")->setMaximumWidth(600);
+        }
+    }
+}
+
+void MainWindow::toggleFullScreen()
+{
+    if (isFullScreen) {
+        // Switch to windowed mode
+        setWindowFlags(Qt::Window);
+        setWindowState(Qt::WindowNoState);
+        resize(1200, 900);
+
+        // Center the window on screen
+        QScreen *screen = QApplication::primaryScreen();
+        QRect screenGeometry = screen->geometry();
+        int x = (screenGeometry.width() - width()) / 2;
+        int y = (screenGeometry.height() - height()) / 2;
+        move(x, y);
+
+        fullScreenToggleButton->setText("⛶ Full Screen");
+        fullScreenToggleButton->setToolTip("Press F11 or click to toggle full screen");
+        isFullScreen = false;
+    } else {
+        // Switch to full screen mode
+        setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
+        setWindowState(Qt::WindowFullScreen);
+
+        QScreen *screen = QApplication::primaryScreen();
+        QRect screenGeometry = screen->geometry();
+        setGeometry(screenGeometry);
+
+        fullScreenToggleButton->setText("⛶ Window");
+        fullScreenToggleButton->setToolTip("Press F11 or click to toggle windowed mode");
+        isFullScreen = true;
+    }
+
+    updateLayoutForMode();
+    show();
     setBackgroundImage();
 }
 
-void MainWindow::setPlayers(const QString& p1, const QString& p2, const QString& mode)
+void MainWindow::keyPressEvent(QKeyEvent* event)
 {
-    player1Name = p1;
-    player2Name = p2;
-    gameMode = mode;
+    if (event->key() == Qt::Key_F11) {
+        toggleFullScreen();
+        event->accept();
+    } else {
+        QMainWindow::keyPressEvent(event);
+    }
+}
 
+void MainWindow::switchToGameView()
+{
+    stackedWidget->setCurrentWidget(gameWidget);
+    resetGame();
+    updateGameStatus();
+}
+
+// Login methods (same as before)
+void MainWindow::resetToModeSelection()
+{
+    currentStep = 0;
+
+    instructionLabel->setText("Welcome! Choose your game mode:");
+    instructionLabel->show();
+    modeComboBox->show();
+    continueButton->show();
+
+    playerLabel->hide();
+    usernameLabel->hide();
+    usernameLineEdit->hide();
+    passwordLabel->hide();
+    passwordLineEdit->hide();
+    confirmPasswordLabel->hide();
+    confirmPasswordLineEdit->hide();
+    signInButton->hide();
+    newPlayerButton->hide();
+    nextPlayerButton->hide();
+    backButton->hide();
+    gameInfoLabel->hide();
+    startGameButton->hide();
+
+    player1Name.clear();
+    player2Name.clear();
+    usernameLineEdit->clear();
+    passwordLineEdit->clear();
+    confirmPasswordLineEdit->clear();
+}
+
+void MainWindow::onModeChanged()
+{
+    gameMode = modeComboBox->currentIndex() == 0 ? "PvP" : "PvAI";
+    showPlayer1Auth();
+}
+
+void MainWindow::showPlayer1Auth()
+{
+    currentStep = 1;
+
+    instructionLabel->hide();
+    modeComboBox->hide();
+    continueButton->hide();
+
+    playerLabel->setText("🎮 Player 1 Authentication");
+    playerLabel->show();
+    usernameLabel->show();
+    usernameLineEdit->show();
+    passwordLabel->show();
+    passwordLineEdit->show();
+    signInButton->show();
+    newPlayerButton->show();
+    backButton->show();
+
+    confirmPasswordLabel->hide();
+    confirmPasswordLineEdit->hide();
+    nextPlayerButton->hide();
+    gameInfoLabel->hide();
+    startGameButton->hide();
+}
+
+void MainWindow::showPlayer2Auth()
+{
+    currentStep = 2;
+
+    playerLabel->setText("🎮 Player 2 Authentication");
+    usernameLineEdit->clear();
+    passwordLineEdit->clear();
+    confirmPasswordLineEdit->hide();
+    confirmPasswordLabel->hide();
+}
+
+void MainWindow::showGameStart()
+{
+    currentStep = 3;
+
+    playerLabel->hide();
+    usernameLabel->hide();
+    usernameLineEdit->hide();
+    passwordLabel->hide();
+    passwordLineEdit->hide();
+    signInButton->hide();
+    newPlayerButton->hide();
+    nextPlayerButton->hide();
+
+    QString info = QString("🎯 Game Mode: %1\n👤 Player 1: %2")
+                       .arg(gameMode == "PvP" ? "Player vs Player" : "Player vs AI")
+                       .arg(player1Name);
+
+    if (gameMode == "PvP") {
+        info += QString("\n👤 Player 2: %1").arg(player2Name);
+    }
+
+    gameInfoLabel->setText(info);
+    gameInfoLabel->show();
+    startGameButton->show();
+}
+
+void MainWindow::onSignInClicked()
+{
+    QString username = usernameLineEdit->text().trimmed();
+    QString password = passwordLineEdit->text();
+
+    if (username.isEmpty() || password.isEmpty()) {
+        QMessageBox::warning(this, "Input Error", "Please enter both username and password.");
+        return;
+    }
+
+    if (authenticateUser(username, password)) {
+        if (currentStep == 1) {
+            player1Name = username;
+            if (gameMode == "PvP") {
+                showPlayer2Auth();
+            } else {
+                player2Name = "AI";
+                showGameStart();
+            }
+        } else if (currentStep == 2) {
+            if (username == player1Name) {
+                QMessageBox::warning(this, "Error", "Player 2 must be different from Player 1!");
+                return;
+            }
+            player2Name = username;
+            showGameStart();
+        }
+    } else {
+        QMessageBox::warning(this, "Authentication Failed", "Invalid username or password.");
+    }
+}
+
+void MainWindow::onNewPlayerClicked()
+{
+    confirmPasswordLabel->show();
+    confirmPasswordLineEdit->show();
+
+    signInButton->setText("Register");
+    newPlayerButton->hide();
+    nextPlayerButton->show();
+    nextPlayerButton->setText("Register");
+
+    disconnect(signInButton, &QPushButton::clicked, this, &MainWindow::onSignInClicked);
+    connect(signInButton, &QPushButton::clicked, this, &MainWindow::onNextPlayerClicked);
+}
+
+void MainWindow::onNextPlayerClicked()
+{
+    QString username = usernameLineEdit->text().trimmed();
+    QString password = passwordLineEdit->text();
+    QString confirmPassword = confirmPasswordLineEdit->text();
+
+    if (username.isEmpty() || password.isEmpty()) {
+        QMessageBox::warning(this, "Input Error", "Please enter username and password.");
+        return;
+    }
+
+    if (confirmPasswordLineEdit->isVisible() && password != confirmPassword) {
+        QMessageBox::warning(this, "Password Error", "Passwords do not match.");
+        return;
+    }
+
+    if (confirmPasswordLineEdit->isVisible()) {
+        if (registerUser(username, password)) {
+            QMessageBox::information(this, "Success", "User registered successfully!");
+
+            confirmPasswordLabel->hide();
+            confirmPasswordLineEdit->hide();
+            signInButton->setText("Sign In");
+            newPlayerButton->show();
+            nextPlayerButton->hide();
+
+            disconnect(signInButton, &QPushButton::clicked, this, &MainWindow::onNextPlayerClicked);
+            connect(signInButton, &QPushButton::clicked, this, &MainWindow::onSignInClicked);
+
+            usernameLineEdit->clear();
+            passwordLineEdit->clear();
+        } else {
+            QMessageBox::warning(this, "Registration Failed", "Username already exists.");
+        }
+    }
+}
+
+void MainWindow::onStartGameClicked()
+{
+    // Set up players info for game view
     QString playersText = QString("👤 %1 (X) vs %2 (O)")
                               .arg(player1Name)
                               .arg(player2Name);
@@ -323,12 +602,90 @@ void MainWindow::setPlayers(const QString& p1, const QString& p2, const QString&
     }
 
     playersLabel->setText(playersText);
-    updateGameStatus();
+
+    // Switch to game view
+    switchToGameView();
 }
 
+void MainWindow::onBackClicked()
+{
+    resetToModeSelection();
+}
+
+void MainWindow::onExitClicked()
+{
+    QApplication::quit();
+}
+
+void MainWindow::onLogoutClicked()
+{
+    int ret = QMessageBox::question(this, "Logout",
+                                    "Are you sure you want to logout?",
+                                    QMessageBox::Yes | QMessageBox::No);
+
+    if (ret == QMessageBox::Yes) {
+        stackedWidget->setCurrentWidget(loginWidget);
+        resetToModeSelection();
+    }
+}
+
+// Authentication methods (same as before)
+bool MainWindow::authenticateUser(const QString& username, const QString& password)
+{
+    QFile file("users.json");
+    if (!file.open(QIODevice::ReadOnly)) {
+        return false;
+    }
+
+    QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+    QJsonObject users = doc.object();
+    file.close();
+
+    if (users.contains(username)) {
+        QString storedHash = users[username].toString();
+        QString inputHash = hashPassword(password);
+        return storedHash == inputHash;
+    }
+
+    return false;
+}
+
+bool MainWindow::registerUser(const QString& username, const QString& password)
+{
+    QFile file("users.json");
+    QJsonObject users;
+
+    if (file.open(QIODevice::ReadOnly)) {
+        QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+        users = doc.object();
+        file.close();
+    }
+
+    if (users.contains(username)) {
+        return false;
+    }
+
+    users[username] = hashPassword(password);
+
+    if (file.open(QIODevice::WriteOnly)) {
+        QJsonDocument doc(users);
+        file.write(doc.toJson());
+        file.close();
+        return true;
+    }
+
+    return false;
+}
+
+QString MainWindow::hashPassword(const QString& password)
+{
+    return QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Sha256).toHex();
+}
+
+// Game methods (keep all existing game methods exactly the same)
 void MainWindow::onGameButtonClicked()
 {
-    if (!gameActive) return;
+   if (!gameActive || !board) return;  // Add board null check
 
     QPushButton* button = qobject_cast<QPushButton*>(sender());
     if (!button || !button->text().isEmpty()) return;
@@ -339,7 +696,6 @@ void MainWindow::onGameButtonClicked()
     if (board->makeMove(row, col, currentPlayer.at(0).toLatin1())) {
         button->setText(currentPlayer);
 
-        // Apply color styling based on player
         if (currentPlayer == "X") {
             button->setStyleSheet(button->styleSheet() + " color: #FF1493; text-shadow: 0 0 15px #FF1493;");
         } else {
@@ -357,10 +713,9 @@ void MainWindow::onGameButtonClicked()
             currentPlayer = (currentPlayer == "X") ? "O" : "X";
             updateGameStatus();
 
-            // AI move if needed
             if (gameMode == "PvAI" && currentPlayer == "O") {
                 statusLabel->setText("🤖 AI is thinking...");
-                aiTimer->start(1000); // 1 second delay for AI move
+                aiTimer->start(1000);
             }
         }
     }
@@ -368,7 +723,7 @@ void MainWindow::onGameButtonClicked()
 
 void MainWindow::makeAIMove()
 {
-    if (!gameActive || currentPlayer != "O") return;
+     if (!gameActive || currentPlayer != "O" || !board || !aiPlayer) return;
 
     auto availableMoves = board->getAvailableMoves();
     if (!availableMoves.empty()) {
@@ -395,12 +750,10 @@ void MainWindow::makeAIMove()
     }
 }
 
-// Fixed animateButton function implementation
 void MainWindow::animateButton(QPushButton* button)
 {
     if (!button) return;
 
-    // Create a simple scale animation
     QPropertyAnimation* animation = new QPropertyAnimation(button, "geometry");
     animation->setDuration(150);
 
@@ -411,14 +764,12 @@ void MainWindow::animateButton(QPushButton* button)
     animation->setEndValue(scaledGeometry);
     animation->setEasingCurve(QEasingCurve::OutBounce);
 
-    // Create return animation
     QPropertyAnimation* returnAnimation = new QPropertyAnimation(button, "geometry");
     returnAnimation->setDuration(150);
     returnAnimation->setStartValue(scaledGeometry);
     returnAnimation->setEndValue(originalGeometry);
     returnAnimation->setEasingCurve(QEasingCurve::InBounce);
 
-    // Connect animations
     connect(animation, &QPropertyAnimation::finished, [returnAnimation]() {
         returnAnimation->start(QAbstractAnimation::DeleteWhenStopped);
     });
@@ -450,7 +801,7 @@ void MainWindow::checkGameEnd()
     } else if (board->checkWin('O')) {
         winner = 'O';
     } else if (board->checkTie()) {
-        winner = 'T'; // Tie
+        winner = 'T';
     }
 
     if (winner != '\0') {
@@ -488,8 +839,7 @@ void MainWindow::showGameOverDialog(const QString& result)
     gameOverDialog->setFixedSize(450, 350);
     gameOverDialog->setModal(true);
 
-    // Set XOXO background
-    QPixmap xoxoBackground("D:/images/gameover_bg.jpg"); // Change path
+    QPixmap xoxoBackground("D:/images/gameover_bg.jpg");
     if (!xoxoBackground.isNull()) {
         xoxoBackground = xoxoBackground.scaled(gameOverDialog->size(),
                                                Qt::KeepAspectRatioByExpanding,
@@ -617,6 +967,7 @@ void MainWindow::onShowHistoryClicked()
     showGameHistoryDialog();
 }
 
+// Keep all existing history methods exactly the same
 void MainWindow::showGameHistoryDialog()
 {
     QDialog* historyDialog = new QDialog(this);
@@ -892,6 +1243,7 @@ void MainWindow::showGameHistoryDialog()
     delete historyDialog;
 }
 
+
 void MainWindow::replayGame(const QJsonObject& gameData)
 {
     // Reset the game board
@@ -1051,6 +1403,7 @@ void MainWindow::replayGame(const QJsonObject& gameData)
     delete replayDialog;
 }
 
+
 void MainWindow::deleteGameFromHistory(int gameIndex)
 {
     QFile file("game_history.json");
@@ -1078,29 +1431,6 @@ void MainWindow::deleteGameFromHistory(int gameIndex)
     }
 }
 
-
-void MainWindow::onLogoutClicked()
-{
-    int ret = QMessageBox::question(this, "Logout",
-                                    "Are you sure you want to logout?",
-                                    QMessageBox::Yes | QMessageBox::No);
-
-    if (ret == QMessageBox::Yes) {
-        this->close();
-
-        LoginDialog* loginDialog = new LoginDialog();
-        if (loginDialog->exec() == QDialog::Accepted) {
-            setPlayers(loginDialog->getPlayer1Name(),
-                       loginDialog->getPlayer2Name(),
-                       loginDialog->getGameMode());
-            resetGame();
-        } else {
-            QApplication::quit();
-        }
-        delete loginDialog;
-    }
-}
-
 void MainWindow::resetGame()
 {
     board->reset();
@@ -1111,9 +1441,355 @@ void MainWindow::resetGame()
     for (int i = 0; i < 3; ++i) {
         for (int j = 0; j < 3; ++j) {
             gameButtons[i][j]->setText("");
-            gameButtons[i][j]->setStyleSheet(""); // Reset styling
+            gameButtons[i][j]->setStyleSheet("");
         }
     }
 
     updateGameStatus();
 }
+
+void MainWindow::setupStyling()
+{
+    QString style = R"(
+        QMainWindow {
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        #titleLabel {
+            color: #FFD700;
+            font-size: 42px;
+            font-weight: bold;
+            text-shadow: 0 0 30px #FFD700, 0 0 40px #FFD700;
+            background: rgba(25, 25, 112, 0.8);
+            border: 4px solid #FFD700;
+            border-radius: 25px;
+            padding: 25px;
+            margin: 15px;
+        }
+
+        #gameTitleLabel {
+            color: #00FFFF;
+            font-size: 20px;
+            font-weight: bold;
+            text-shadow: 0 0 15px #00FFFF, 0 0 20px #00FFFF;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00FFFF;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 5px;
+            min-height: 60px;
+        }
+
+        #instructionLabel, #playerLabel, #gameInfoLabel {
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
+            background: rgba(75, 0, 130, 0.7);
+            border-radius: 15px;
+            padding: 15px;
+            border: 3px solid #9370DB;
+            margin: 5px 0;
+        }
+
+        #playersLabel {
+            color: #FF1493;
+            font-size: 16px;
+            font-weight: bold;
+            text-shadow: 0 0 8px #FF1493;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #FF1493;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 5px;
+            min-height: 60px;
+        }
+
+        #statusLabel {
+            color: #00FFFF;
+            font-size: 18px;
+            font-weight: bold;
+            text-shadow: 0 0 10px #00FFFF;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00FFFF;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 5px;
+            min-height: 60px;
+        }
+
+        #fieldLabel {
+            color: #E6E6FA;
+            font-size: 16px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            margin: 5px 0;
+        }
+
+        #inputField {
+            background: rgba(25, 25, 112, 0.9);
+            color: white;
+            border: 3px solid #4169E1;
+            border-radius: 12px;
+            padding: 15px 18px;
+            font-size: 15px;
+            selection-background-color: rgba(138, 43, 226, 0.7);
+            min-height: 18px;
+            margin: 3px 0;
+        }
+
+        #inputField:focus {
+            border: 3px solid #00BFFF;
+            background: rgba(25, 25, 112, 1.0);
+        }
+
+        #modeComboBox {
+            background: rgba(75, 0, 130, 0.9);
+            color: white;
+            border: 3px solid #9370DB;
+            border-radius: 15px;
+            padding: 15px 18px;
+            font-size: 16px;
+            font-weight: bold;
+            min-height: 22px;
+            margin: 5px 0;
+        }
+
+        #primaryButton {
+            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                stop:0 rgba(138, 43, 226, 0.9),
+                stop:1 rgba(75, 0, 130, 0.9));
+            color: white;
+            border: 3px solid #FFD700;
+            border-radius: 18px;
+            font-size: 16px;
+            font-weight: bold;
+            padding: 15px 30px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            min-height: 20px;
+            min-width: 120px;
+        }
+
+        #primaryButton:hover {
+            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                stop:0 rgba(138, 43, 226, 1.0),
+                stop:1 rgba(75, 0, 130, 1.0));
+            border: 3px solid #FFA500;
+        }
+
+        #secondaryButton {
+            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                stop:0 rgba(72, 61, 139, 0.9),
+                stop:1 rgba(106, 90, 205, 0.9));
+            color: white;
+            border: 3px solid #9370DB;
+            border-radius: 18px;
+            font-size: 16px;
+            font-weight: bold;
+            padding: 15px 30px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            min-height: 20px;
+            min-width: 120px;
+        }
+
+        #secondaryButton:hover {
+            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                stop:0 rgba(106, 90, 205, 1.0),
+                stop:1 rgba(72, 61, 139, 1.0));
+            border: 3px solid #BA55D3;
+        }
+
+        #backButton {
+            background: rgba(220, 20, 60, 0.8);
+            color: white;
+            border: 3px solid #DC143C;
+            border-radius: 15px;
+            font-size: 14px;
+            font-weight: bold;
+            padding: 12px 20px;
+            min-width: 80px;
+        }
+
+        #backButton:hover {
+            background: rgba(220, 20, 60, 1.0);
+            border: 3px solid #FF6347;
+        }
+
+        #exitButton {
+            background: rgba(139, 0, 0, 0.8);
+            color: white;
+            border: 3px solid #8B0000;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            padding: 12px 20px;
+            margin: 10px;
+        }
+
+        #exitButton:hover {
+            background: rgba(139, 0, 0, 1.0);
+            border: 3px solid #FF0000;
+        }
+
+        #toggleButton {
+            background: rgba(0, 100, 0, 0.8);
+            color: white;
+            border: 3px solid #228B22;
+            border-radius: 15px;
+            font-size: 14px;
+            font-weight: bold;
+            padding: 12px 20px;
+            margin: 10px;
+        }
+
+        #toggleButton:hover {
+            background: rgba(0, 128, 0, 1.0);
+            border: 3px solid #32CD32;
+        }
+
+        #startButton {
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                stop:0 rgba(255, 215, 0, 0.9),
+                stop:0.5 rgba(255, 140, 0, 0.9),
+                stop:1 rgba(255, 69, 0, 0.9));
+            color: #8B0000;
+            border: 4px solid #FFD700;
+            border-radius: 25px;
+            font-size: 22px;
+            font-weight: bold;
+            padding: 20px 40px;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+            margin: 10px 0;
+        }
+
+        #startButton:hover {
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                stop:0 rgba(255, 215, 0, 1.0),
+                stop:0.5 rgba(255, 140, 0, 1.0),
+                stop:1 rgba(255, 69, 0, 1.0));
+            border: 4px solid #FFA500;
+        }
+
+        #leftPanel {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid #8A2BE2;
+            border-radius: 15px;
+        }
+
+        #rightPanel {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        #gameGridWidget {
+            background: rgba(0, 0, 0, 0.6);
+            border: 4px solid #8A2BE2;
+            border-radius: 25px;
+        }
+
+        #gameButton {
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                stop:0 rgba(0, 0, 0, 0.8),
+                stop:1 rgba(75, 0, 130, 0.6));
+            border: 3px solid #00FFFF;
+            border-radius: 15px;
+            color: white;
+            font-size: 56px;
+            font-weight: bold;
+            text-shadow: 0 0 15px currentColor;
+        }
+
+        #gameButton:hover {
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                stop:0 rgba(255, 20, 147, 0.4),
+                stop:1 rgba(138, 43, 226, 0.4));
+            border: 4px solid #FF1493;
+            text-shadow: 0 0 25px currentColor;
+        }
+
+        #gameButton:pressed {
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                stop:0 rgba(138, 43, 226, 0.8),
+                stop:1 rgba(75, 0, 130, 0.8));
+            border: 3px solid #8A2BE2;
+        }
+
+        QToolBar {
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                stop:0 rgba(138, 43, 226, 0.9),
+                stop:0.5 rgba(255, 20, 147, 0.9),
+                stop:1 rgba(138, 43, 226, 0.9));
+            border: none;
+            spacing: 15px;
+            padding: 8px;
+        }
+
+        QToolButton {
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: 2px solid #00FFFF;
+            border-radius: 8px;
+            padding: 8px 15px;
+            font-weight: bold;
+            font-size: 12px;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+        }
+
+        QToolButton:hover {
+            background: rgba(255, 20, 147, 0.8);
+            border: 2px solid #FF1493;
+            text-shadow: 0 0 10px #FF1493;
+        }
+
+        QToolButton:pressed {
+            background: rgba(138, 43, 226, 0.8);
+            border: 2px solid #8A2BE2;
+        }
+
+        QStatusBar {
+            background: rgba(0, 0, 0, 0.8);
+            color: #00FFFF;
+            border-top: 2px solid #00FFFF;
+        }
+    )";
+
+    this->setStyleSheet(style);
+}
+
+void MainWindow::setBackgroundImage()
+{
+    QPixmap background;
+
+    if (!stackedWidget || !loginWidget || !gameWidget) {
+        // Default to login background if widgets aren't ready
+        background.load("D:/images/game_bg.jpg");
+    } else {
+        // Safe to check current widget
+        if (stackedWidget->currentWidget() == loginWidget) {
+            background.load("D:/images/game_bg.jpg");
+        } else {
+            background.load("D:/images/game_bg.jpg");
+        }
+    }
+
+    if (!background.isNull()) {
+        background = background.scaled(this->size(),
+                                       Qt::KeepAspectRatioByExpanding,
+                                       Qt::SmoothTransformation);
+
+        QPalette palette;
+        palette.setBrush(QPalette::Window, background);
+        this->setPalette(palette);
+        this->setAutoFillBackground(true);
+    }
+}
+
+void MainWindow::resizeEvent(QResizeEvent* event)
+{
+    QMainWindow::resizeEvent(event);
+
+    // Only call setBackgroundImage if widgets are initialized
+    if (stackedWidget && loginWidget && gameWidget) {
+        setBackgroundImage();
+    }
+}
+

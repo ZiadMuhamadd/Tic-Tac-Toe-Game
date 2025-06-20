@@ -39,8 +39,16 @@ template <> constexpr inline auto MainWindow::qt_create_metaobjectdata<qt_meta_t
     namespace QMC = QtMocConstants;
     QtMocHelpers::StringRefStorage qt_stringData {
         "MainWindow",
-        "onGameButtonClicked",
+        "onModeChanged",
         "",
+        "onSignInClicked",
+        "onNewPlayerClicked",
+        "onNextPlayerClicked",
+        "onStartGameClicked",
+        "onBackClicked",
+        "onExitClicked",
+        "toggleFullScreen",
+        "onGameButtonClicked",
         "onNewGameClicked",
         "onShowHistoryClicked",
         "onLogoutClicked",
@@ -48,16 +56,32 @@ template <> constexpr inline auto MainWindow::qt_create_metaobjectdata<qt_meta_t
     };
 
     QtMocHelpers::UintData qt_methods {
-        // Slot 'onGameButtonClicked'
+        // Slot 'onModeChanged'
         QtMocHelpers::SlotData<void()>(1, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'onNewGameClicked'
+        // Slot 'onSignInClicked'
         QtMocHelpers::SlotData<void()>(3, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'onShowHistoryClicked'
+        // Slot 'onNewPlayerClicked'
         QtMocHelpers::SlotData<void()>(4, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'onLogoutClicked'
+        // Slot 'onNextPlayerClicked'
         QtMocHelpers::SlotData<void()>(5, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'makeAIMove'
+        // Slot 'onStartGameClicked'
         QtMocHelpers::SlotData<void()>(6, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'onBackClicked'
+        QtMocHelpers::SlotData<void()>(7, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'onExitClicked'
+        QtMocHelpers::SlotData<void()>(8, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'toggleFullScreen'
+        QtMocHelpers::SlotData<void()>(9, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'onGameButtonClicked'
+        QtMocHelpers::SlotData<void()>(10, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'onNewGameClicked'
+        QtMocHelpers::SlotData<void()>(11, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'onShowHistoryClicked'
+        QtMocHelpers::SlotData<void()>(12, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'onLogoutClicked'
+        QtMocHelpers::SlotData<void()>(13, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'makeAIMove'
+        QtMocHelpers::SlotData<void()>(14, 2, QMC::AccessPrivate, QMetaType::Void),
     };
     QtMocHelpers::UintData qt_properties {
     };
@@ -81,11 +105,19 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
     auto *_t = static_cast<MainWindow *>(_o);
     if (_c == QMetaObject::InvokeMetaMethod) {
         switch (_id) {
-        case 0: _t->onGameButtonClicked(); break;
-        case 1: _t->onNewGameClicked(); break;
-        case 2: _t->onShowHistoryClicked(); break;
-        case 3: _t->onLogoutClicked(); break;
-        case 4: _t->makeAIMove(); break;
+        case 0: _t->onModeChanged(); break;
+        case 1: _t->onSignInClicked(); break;
+        case 2: _t->onNewPlayerClicked(); break;
+        case 3: _t->onNextPlayerClicked(); break;
+        case 4: _t->onStartGameClicked(); break;
+        case 5: _t->onBackClicked(); break;
+        case 6: _t->onExitClicked(); break;
+        case 7: _t->toggleFullScreen(); break;
+        case 8: _t->onGameButtonClicked(); break;
+        case 9: _t->onNewGameClicked(); break;
+        case 10: _t->onShowHistoryClicked(); break;
+        case 11: _t->onLogoutClicked(); break;
+        case 12: _t->makeAIMove(); break;
         default: ;
         }
     }
@@ -111,14 +143,14 @@ int MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 5)
+        if (_id < 13)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 5;
+        _id -= 13;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 5)
+        if (_id < 13)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 5;
+        _id -= 13;
     }
     return _id;
 }

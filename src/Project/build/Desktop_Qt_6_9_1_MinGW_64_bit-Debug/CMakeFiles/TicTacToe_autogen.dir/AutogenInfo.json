@@ -306,12 +306,6 @@
 		],
 		[ "D:/Z'/Github/Tic-Tac-Toe-Game/src/Project/Board.h", "mU", "", null ],
 		[
-			"D:/Z'/Github/Tic-Tac-Toe-Game/src/Project/LoginDialog.h",
-			"mU",
-			"",
-			null
-		],
-		[
 			"D:/Z'/Github/Tic-Tac-Toe-Game/src/Project/mainwindow.h",
 			"mU",
 			"",
@@ -384,10 +378,8 @@
 	[
 		"D:/Z'/Github/Tic-Tac-Toe-Game/src/Project/AIPlayer.h",
 		"D:/Z'/Github/Tic-Tac-Toe-Game/src/Project/Board.h",
-		"D:/Z'/Github/Tic-Tac-Toe-Game/src/Project/LoginDialog.h",
 		"D:/Z'/Github/Tic-Tac-Toe-Game/src/Project/build/Desktop_Qt_6_9_1_MinGW_64_bit-Debug/moc_AIPlayer.cpp",
 		"D:/Z'/Github/Tic-Tac-Toe-Game/src/Project/build/Desktop_Qt_6_9_1_MinGW_64_bit-Debug/moc_Board.cpp",
-		"D:/Z'/Github/Tic-Tac-Toe-Game/src/Project/build/Desktop_Qt_6_9_1_MinGW_64_bit-Debug/moc_LoginDialog.cpp",
 		"D:/Z'/Github/Tic-Tac-Toe-Game/src/Project/build/Desktop_Qt_6_9_1_MinGW_64_bit-Debug/moc_mainwindow.cpp",
 		"D:/Z'/Github/Tic-Tac-Toe-Game/src/Project/mainwindow.h"
 	],
@@ -403,11 +395,6 @@
 	[
 		[ "D:/Z'/Github/Tic-Tac-Toe-Game/src/Project/AIPlayer.cpp", "MU", null ],
 		[ "D:/Z'/Github/Tic-Tac-Toe-Game/src/Project/Board.cpp", "MU", null ],
-		[
-			"D:/Z'/Github/Tic-Tac-Toe-Game/src/Project/LoginDialog.cpp",
-			"MU",
-			null
-		],
 		[ "D:/Z'/Github/Tic-Tac-Toe-Game/src/Project/main.cpp", "MU", null ],
 		[
 			"D:/Z'/Github/Tic-Tac-Toe-Game/src/Project/mainwindow.cpp",
@@ -421,7 +408,6 @@
 	[
 		"D:/Z'/Github/Tic-Tac-Toe-Game/src/Project/build/Desktop_Qt_6_9_1_MinGW_64_bit-Debug/moc_AIPlayer.cpp",
 		"D:/Z'/Github/Tic-Tac-Toe-Game/src/Project/build/Desktop_Qt_6_9_1_MinGW_64_bit-Debug/moc_Board.cpp",
-		"D:/Z'/Github/Tic-Tac-Toe-Game/src/Project/build/Desktop_Qt_6_9_1_MinGW_64_bit-Debug/moc_LoginDialog.cpp",
 		"D:/Z'/Github/Tic-Tac-Toe-Game/src/Project/build/Desktop_Qt_6_9_1_MinGW_64_bit-Debug/moc_mainwindow.cpp"
 	],
 	"UIC_UI_FILES" : [],

@@ -2,16 +2,20 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QStackedWidget>
 #include <QGridLayout>
 #include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QPushButton>
 #include <QLabel>
+#include <QLineEdit>
+#include <QComboBox>
 #include <QToolBar>
 #include <QAction>
 #include <QMessageBox>
 #include <QDialog>
-#include <QListWidget>          // Add this line
-#include <QListWidgetItem>      // Add this line
+#include <QListWidget>
+#include <QListWidgetItem>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
@@ -23,6 +27,8 @@
 #include <QApplication>
 #include <QPropertyAnimation>
 #include <QRect>
+#include <QCryptographicHash>
+#include <QKeyEvent>
 #include "Board.h"
 #include "AIPlayer.h"
 
@@ -34,12 +40,22 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() = default;
 
-    void setPlayers(const QString& p1, const QString& p2, const QString& mode);
-
 protected:
     void resizeEvent(QResizeEvent* event) override;
+    void keyPressEvent(QKeyEvent* event) override;
 
 private slots:
+    // Login slots
+    void onModeChanged();
+    void onSignInClicked();
+    void onNewPlayerClicked();
+    void onNextPlayerClicked();
+    void onStartGameClicked();
+    void onBackClicked();
+    void onExitClicked();
+    void toggleFullScreen();
+
+    // Game slots
     void onGameButtonClicked();
     void onNewGameClicked();
     void onShowHistoryClicked();
@@ -47,9 +63,25 @@ private slots:
     void makeAIMove();
 
 private:
+    // UI Setup methods
     void setupUI();
+    void setupLoginView();
+    void setupGameView();
     void setupStyling();
     void setBackgroundImage();
+    void updateLayoutForMode();
+
+    // Login methods
+    void resetToModeSelection();
+    void showPlayer1Auth();
+    void showPlayer2Auth();
+    void showGameStart();
+    bool authenticateUser(const QString& username, const QString& password);
+    bool registerUser(const QString& username, const QString& password);
+    QString hashPassword(const QString& password);
+    void switchToGameView();
+
+    // Game methods
     void setupGameGrid();
     void setupToolbar();
     void resetGame();
@@ -58,13 +90,41 @@ private:
     void saveGameHistory(const QString& winner);
     void showGameOverDialog(const QString& result);
     void animateButton(QPushButton* button);
-    void showGameHistoryDialog();        // Add this line
-    void replayGame(const QJsonObject& gameData);  // Add this line
-    void deleteGameFromHistory(int gameIndex);     // Add this line
+    void showGameHistoryDialog();
+    void replayGame(const QJsonObject& gameData);
+    void deleteGameFromHistory(int gameIndex);
 
-    // UI Components
-    QWidget* centralWidget;
-    QVBoxLayout* mainLayout;
+    // Main UI Components
+    QStackedWidget* stackedWidget;
+    QWidget* loginWidget;
+    QWidget* gameWidget;
+
+    // Login UI Components
+    QVBoxLayout* loginMainLayout;
+    QLabel* loginTitleLabel;
+    QLabel* instructionLabel;
+    QComboBox* modeComboBox;
+    QPushButton* continueButton;
+    QLabel* playerLabel;
+    QLabel* usernameLabel;
+    QLabel* passwordLabel;
+    QLabel* confirmPasswordLabel;
+    QLineEdit* usernameLineEdit;
+    QLineEdit* passwordLineEdit;
+    QLineEdit* confirmPasswordLineEdit;
+    QPushButton* signInButton;
+    QPushButton* newPlayerButton;
+    QPushButton* nextPlayerButton;
+    QPushButton* backButton;
+    QLabel* gameInfoLabel;
+    QPushButton* startGameButton;
+    QPushButton* exitButton;
+    QPushButton* fullScreenToggleButton;
+
+    // Game UI Components
+    QWidget* leftPanel;
+    QWidget* rightPanel;
+    QHBoxLayout* gameMainLayout;
     QLabel* titleLabel;
     QLabel* statusLabel;
     QLabel* playersLabel;
@@ -86,6 +146,10 @@ private:
     bool gameActive;
     QStringList moveHistory;
     QTimer* aiTimer;
+
+    // Login Logic
+    int currentStep;
+    bool isFullScreen;
 };
 
 #endif // MAINWINDOW_H

@@ -15,14 +15,14 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # Define source and header files separately
 set(SOURCES
     main.cpp
-    LoginDialog.cpp
+
     MainWindow.cpp
     Board.cpp
     AIPlayer.cpp
 )
 
 set(HEADERS
-    LoginDialog.h
+
     MainWindow.h
     Board.h
     AIPlayer.h
