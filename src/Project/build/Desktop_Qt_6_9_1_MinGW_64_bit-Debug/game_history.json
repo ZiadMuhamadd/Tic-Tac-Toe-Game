@@ -1355,6 +1355,79 @@
             ],
             "opponent": "AI",
             "winner": "T"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O01",
+                "X11",
+                "O02",
+                "X22"
+            ],
+            "opponent": "AI",
+            "winner": "X"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O11",
+                "X22",
+                "O01",
+                "X21",
+                "O20",
+                "X02",
+                "O12",
+                "X10"
+            ],
+            "opponent": "AI",
+            "winner": "T"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O11",
+                "X02",
+                "O20",
+                "X22",
+                "O01",
+                "X10",
+                "O21"
+            ],
+            "opponent": "AI",
+            "winner": "O"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X10",
+                "O11",
+                "X02",
+                "O00",
+                "X22",
+                "O12",
+                "X20",
+                "O21",
+                "X01"
+            ],
+            "opponent": "AI",
+            "winner": "T"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X11",
+                "O00",
+                "X01",
+                "O10",
+                "X02",
+                "O12",
+                "X21"
+            ],
+            "opponent": "AI",
+            "winner": "X"
         }
     ]
 }

@@ -36,6 +36,7 @@ MainWindow::MainWindow(QWidget *parent)
     // Set background after everything is initialized
     setBackgroundImage();
 
+
     // Start with login view
     if (stackedWidget && loginWidget) {
         stackedWidget->setCurrentWidget(loginWidget);
@@ -213,6 +214,7 @@ void MainWindow::setupLoginView()
 
 void MainWindow::setupGameView()
 {
+
     gameMainLayout = new QHBoxLayout(gameWidget);
     gameMainLayout->setSpacing(20);
     gameMainLayout->setContentsMargins(20, 20, 20, 20);
@@ -276,6 +278,7 @@ void MainWindow::setupGameView()
     // Add panels to main layout
     gameMainLayout->addWidget(leftPanel);
     gameMainLayout->addWidget(rightPanel);
+
 }
 
 void MainWindow::setupGameGrid()
@@ -389,6 +392,7 @@ void MainWindow::toggleFullScreen()
     updateLayoutForMode();
     show();
     setBackgroundImage();
+
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
@@ -404,6 +408,25 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 void MainWindow::switchToGameView()
 {
     stackedWidget->setCurrentWidget(gameWidget);
+    QPixmap background;
+
+    // Safe to check current widget
+    if (stackedWidget->currentWidget() == loginWidget) {
+        background.load("D:/images/login_bg.jpg");
+    } else {
+        background.load("D:/images/game_bg.jpg");
+    }
+
+    if (!background.isNull()) {
+        background = background.scaled(this->size(),
+                                       Qt::KeepAspectRatioByExpanding,
+                                       Qt::SmoothTransformation);
+
+        QPalette palette;
+        palette.setBrush(QPalette::Window, background);
+        this->setPalette(palette);
+        this->setAutoFillBackground(true);
+    }
     resetGame();
     updateGameStatus();
 }
@@ -592,6 +615,7 @@ void MainWindow::onNextPlayerClicked()
 
 void MainWindow::onStartGameClicked()
 {
+
     // Set up players info for game view
     QString playersText = QString("👤 %1 (X) vs %2 (O)")
                               .arg(player1Name)
@@ -1759,17 +1783,12 @@ void MainWindow::setBackgroundImage()
 {
     QPixmap background;
 
-    if (!stackedWidget || !loginWidget || !gameWidget) {
-        // Default to login background if widgets aren't ready
-        background.load("D:/images/game_bg.jpg");
-    } else {
         // Safe to check current widget
         if (stackedWidget->currentWidget() == loginWidget) {
-            background.load("D:/images/game_bg.jpg");
+            background.load("D:/images/login_bg.jpg");
         } else {
             background.load("D:/images/game_bg.jpg");
         }
-    }
 
     if (!background.isNull()) {
         background = background.scaled(this->size(),
