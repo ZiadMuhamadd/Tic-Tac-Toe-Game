@@ -69,118 +69,139 @@ void MainWindow::setupUI()
 void MainWindow::setupLoginView()
 {
     loginMainLayout = new QVBoxLayout(loginWidget);
+    loginMainLayout->setSpacing(10);  // Reduced spacing
+    loginMainLayout->setContentsMargins(40, 20, 40, 20);  // Reduced margins
 
     // Title
     loginTitleLabel = new QLabel("🎮 TIC TAC TOE 🎮", loginWidget);
     loginTitleLabel->setAlignment(Qt::AlignCenter);
     loginTitleLabel->setObjectName("titleLabel");
 
+    // Create a scroll area for the main content
+    QScrollArea* scrollArea = new QScrollArea(loginWidget);
+    scrollArea->setWidgetResizable(true);
+    scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    scrollArea->setFrameShape(QFrame::NoFrame);
+    scrollArea->setStyleSheet("QScrollArea { background: transparent; border: none; }");
+
+    // Create scrollable content widget
+    QWidget* scrollContent = new QWidget();
+    scrollContent->setObjectName("scrollContent");
+
+    QVBoxLayout* scrollLayout = new QVBoxLayout(scrollContent);
+    scrollLayout->setSpacing(12);  // Reduced spacing
+    scrollLayout->setContentsMargins(20, 20, 20, 20);
+
     // Instruction
-    instructionLabel = new QLabel("Welcome! Choose your game mode:", loginWidget);
+    instructionLabel = new QLabel("Welcome! Choose your game mode:", scrollContent);
     instructionLabel->setAlignment(Qt::AlignCenter);
     instructionLabel->setObjectName("instructionLabel");
 
     // Mode selection
-    modeComboBox = new QComboBox(loginWidget);
+    modeComboBox = new QComboBox(scrollContent);
     modeComboBox->addItem("🎯 Player vs Player");
     modeComboBox->addItem("🤖 Player vs AI");
     modeComboBox->setObjectName("modeComboBox");
 
-    continueButton = new QPushButton("Continue", loginWidget);
+    continueButton = new QPushButton("Continue", scrollContent);
     continueButton->setObjectName("primaryButton");
 
     // Player info
-    playerLabel = new QLabel(loginWidget);
+    playerLabel = new QLabel(scrollContent);
     playerLabel->setAlignment(Qt::AlignCenter);
     playerLabel->setObjectName("playerLabel");
 
     // Authentication fields
-    usernameLabel = new QLabel("Username:", loginWidget);
+    usernameLabel = new QLabel("Username:", scrollContent);
     usernameLabel->setObjectName("fieldLabel");
 
-    usernameLineEdit = new QLineEdit(loginWidget);
+    usernameLineEdit = new QLineEdit(scrollContent);
     usernameLineEdit->setObjectName("inputField");
     usernameLineEdit->setPlaceholderText("Enter your username");
 
-    passwordLabel = new QLabel("Password:", loginWidget);
+    passwordLabel = new QLabel("Password:", scrollContent);
     passwordLabel->setObjectName("fieldLabel");
 
-    passwordLineEdit = new QLineEdit(loginWidget);
+    passwordLineEdit = new QLineEdit(scrollContent);
     passwordLineEdit->setObjectName("inputField");
     passwordLineEdit->setEchoMode(QLineEdit::Password);
     passwordLineEdit->setPlaceholderText("Enter your password");
 
-    confirmPasswordLabel = new QLabel("Confirm Password:", loginWidget);
+    confirmPasswordLabel = new QLabel("Confirm Password:", scrollContent);
     confirmPasswordLabel->setObjectName("fieldLabel");
 
-    confirmPasswordLineEdit = new QLineEdit(loginWidget);
+    confirmPasswordLineEdit = new QLineEdit(scrollContent);
     confirmPasswordLineEdit->setObjectName("inputField");
     confirmPasswordLineEdit->setEchoMode(QLineEdit::Password);
     confirmPasswordLineEdit->setPlaceholderText("Confirm your password");
 
     // Buttons
-    signInButton = new QPushButton("Sign In", loginWidget);
+    signInButton = new QPushButton("Sign In", scrollContent);
     signInButton->setObjectName("primaryButton");
 
-    newPlayerButton = new QPushButton("New Player", loginWidget);
+    newPlayerButton = new QPushButton("New Player", scrollContent);
     newPlayerButton->setObjectName("secondaryButton");
 
-    nextPlayerButton = new QPushButton("Next Player", loginWidget);
+    nextPlayerButton = new QPushButton("Next Player", scrollContent);
     nextPlayerButton->setObjectName("primaryButton");
 
-    backButton = new QPushButton("← Back", loginWidget);
+    backButton = new QPushButton("← Back", scrollContent);
     backButton->setObjectName("backButton");
 
-    // Control buttons
+    // Game start
+    gameInfoLabel = new QLabel(scrollContent);
+    gameInfoLabel->setAlignment(Qt::AlignCenter);
+    gameInfoLabel->setObjectName("gameInfoLabel");
+
+    startGameButton = new QPushButton("🚀 START GAME", scrollContent);
+    startGameButton->setObjectName("startButton");
+
+    // Add widgets to scroll layout with reduced spacing
+    scrollLayout->addWidget(instructionLabel);
+    scrollLayout->addSpacing(8);
+    scrollLayout->addWidget(modeComboBox);
+    scrollLayout->addSpacing(8);
+    scrollLayout->addWidget(continueButton);
+    scrollLayout->addSpacing(10);
+    scrollLayout->addWidget(playerLabel);
+    scrollLayout->addSpacing(8);
+    scrollLayout->addWidget(usernameLabel);
+    scrollLayout->addWidget(usernameLineEdit);
+    scrollLayout->addSpacing(5);
+    scrollLayout->addWidget(passwordLabel);
+    scrollLayout->addWidget(passwordLineEdit);
+    scrollLayout->addSpacing(5);
+    scrollLayout->addWidget(confirmPasswordLabel);
+    scrollLayout->addWidget(confirmPasswordLineEdit);
+    scrollLayout->addSpacing(10);
+
+    // Button layout with reduced spacing
+    QHBoxLayout* buttonLayout = new QHBoxLayout();
+    buttonLayout->setSpacing(10);
+    buttonLayout->addWidget(backButton);
+    buttonLayout->addStretch();
+    buttonLayout->addWidget(signInButton);
+    buttonLayout->addWidget(newPlayerButton);
+    buttonLayout->addWidget(nextPlayerButton);
+    scrollLayout->addLayout(buttonLayout);
+
+    scrollLayout->addSpacing(15);
+    scrollLayout->addWidget(gameInfoLabel);
+    scrollLayout->addSpacing(10);
+    scrollLayout->addWidget(startGameButton);
+    scrollLayout->addSpacing(20);  // Bottom padding
+
+    // Set scroll content
+    scrollArea->setWidget(scrollContent);
+
+    // Control buttons (fixed at top)
     exitButton = new QPushButton("✕ Exit", loginWidget);
     exitButton->setObjectName("exitButton");
 
     fullScreenToggleButton = new QPushButton("⛶ Window", loginWidget);
     fullScreenToggleButton->setObjectName("toggleButton");
     fullScreenToggleButton->setToolTip("Press F11 or click to toggle full screen");
-
-    // Game start
-    gameInfoLabel = new QLabel(loginWidget);
-    gameInfoLabel->setAlignment(Qt::AlignCenter);
-    gameInfoLabel->setObjectName("gameInfoLabel");
-
-    startGameButton = new QPushButton("🚀 START GAME", loginWidget);
-    startGameButton->setObjectName("startButton");
-
-    // Create centered container widget
-    QWidget* centerWidget = new QWidget(loginWidget);
-    centerWidget->setObjectName("centerWidget");
-    centerWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-
-    QVBoxLayout* centerLayout = new QVBoxLayout(centerWidget);
-    centerLayout->setSpacing(15);
-    centerLayout->setContentsMargins(20, 20, 20, 20);
-
-    // Add widgets to center layout
-    centerLayout->addWidget(loginTitleLabel);
-    centerLayout->addWidget(instructionLabel);
-    centerLayout->addWidget(modeComboBox);
-    centerLayout->addWidget(continueButton);
-    centerLayout->addWidget(playerLabel);
-    centerLayout->addWidget(usernameLabel);
-    centerLayout->addWidget(usernameLineEdit);
-    centerLayout->addWidget(passwordLabel);
-    centerLayout->addWidget(passwordLineEdit);
-    centerLayout->addWidget(confirmPasswordLabel);
-    centerLayout->addWidget(confirmPasswordLineEdit);
-
-    QHBoxLayout* buttonLayout = new QHBoxLayout();
-    buttonLayout->setSpacing(15);
-    buttonLayout->addWidget(backButton);
-    buttonLayout->addStretch();
-    buttonLayout->addWidget(signInButton);
-    buttonLayout->addWidget(newPlayerButton);
-    buttonLayout->addWidget(nextPlayerButton);
-    centerLayout->addLayout(buttonLayout);
-
-    centerLayout->addSpacing(20);
-    centerLayout->addWidget(gameInfoLabel);
-    centerLayout->addWidget(startGameButton);
 
     // Create top control buttons layout
     QHBoxLayout* topControlLayout = new QHBoxLayout();
@@ -190,17 +211,9 @@ void MainWindow::setupLoginView()
     topControlLayout->addWidget(exitButton);
 
     // Add everything to main layout
+    loginMainLayout->addWidget(loginTitleLabel);
     loginMainLayout->addLayout(topControlLayout);
-    loginMainLayout->addSpacing(20);
-
-    // Center the main content horizontally
-    QHBoxLayout* horizontalCenterLayout = new QHBoxLayout();
-    horizontalCenterLayout->addStretch();
-    horizontalCenterLayout->addWidget(centerWidget);
-    horizontalCenterLayout->addStretch();
-
-    loginMainLayout->addLayout(horizontalCenterLayout);
-    loginMainLayout->addSpacing(40);
+    loginMainLayout->addWidget(scrollArea, 1);  // Give scroll area most space
 
     // Connect login signals
     connect(continueButton, &QPushButton::clicked, this, &MainWindow::onModeChanged);
@@ -212,6 +225,7 @@ void MainWindow::setupLoginView()
     connect(exitButton, &QPushButton::clicked, this, &MainWindow::onExitClicked);
     connect(fullScreenToggleButton, &QPushButton::clicked, this, &MainWindow::toggleFullScreen);
 }
+
 
 void MainWindow::setupGameView()
 {
@@ -1488,6 +1502,34 @@ void MainWindow::setupStyling()
             background-color: rgba(0, 0, 0, 0.1);
         }
 
+        #scrollContent {
+            background: transparent;
+        }
+
+        QScrollArea {
+            background: transparent;
+            border: none;
+        }
+
+        QScrollBar:vertical {
+            background: rgba(0, 0, 0, 0.3);
+            width: 12px;
+            border-radius: 6px;
+        }
+
+        QScrollBar::handle:vertical {
+            background: rgba(138, 43, 226, 0.8);
+            border-radius: 6px;
+            min-height: 20px;
+        }
+
+        QScrollBar::handle:vertical:hover {
+            background: rgba(255, 20, 147, 0.8);
+        }
+
+        QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+            height: 0px;
+        }
         #titleLabel {
             color: #FFD700;
             font-size: 42px;

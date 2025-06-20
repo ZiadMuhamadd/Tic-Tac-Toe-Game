@@ -31,6 +31,8 @@
 #include <QKeyEvent>
 #include "Board.h"
 #include "AIPlayer.h"
+#include <QScrollArea>
+#include <QFrame>
 
 class MainWindow : public QMainWindow
 {

@@ -1519,6 +1519,20 @@
             ],
             "opponent": "AI",
             "winner": "T"
+        },
+        {
+            "mode": "PvP",
+            "moves": [
+                "X00",
+                "O11",
+                "X22",
+                "O02",
+                "X20",
+                "O10",
+                "X21"
+            ],
+            "opponent": "Islam",
+            "winner": "X"
         }
     ]
 }
