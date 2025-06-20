@@ -1,4 +1,19 @@
 {
+    "Islam": [
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O11",
+                "X22",
+                "O01",
+                "X20",
+                "O21"
+            ],
+            "opponent": "AI",
+            "winner": "O"
+        }
+    ],
     "Ziad": [
         {
             "mode": "PvP",
@@ -1533,6 +1548,50 @@
             ],
             "opponent": "Islam",
             "winner": "X"
+        },
+        {
+            "mode": "PvP",
+            "moves": [
+                "X00",
+                "O11",
+                "X22",
+                "O02",
+                "X20",
+                "O10",
+                "X21"
+            ],
+            "opponent": "Islam",
+            "winner": "X"
+        },
+        {
+            "mode": "PvP",
+            "moves": [
+                "X00",
+                "O11",
+                "X22",
+                "O02",
+                "X20",
+                "O10",
+                "X21"
+            ],
+            "opponent": "Nash2at",
+            "winner": "X"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O11",
+                "X22",
+                "O01",
+                "X21",
+                "O20",
+                "X02",
+                "O12",
+                "X10"
+            ],
+            "opponent": "AI",
+            "winner": "T"
         }
     ]
 }

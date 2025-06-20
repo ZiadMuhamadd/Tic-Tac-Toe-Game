@@ -674,6 +674,25 @@ void MainWindow::onLogoutClicked()
         toolBar->setVisible(false);  // Hide toolbar in login view
         resetToModeSelection();
     }
+    QPixmap background;
+
+    // Safe to check current widget
+    if (stackedWidget->currentWidget() == loginWidget) {
+        background.load("D:/images/login_bg.jpg");
+    } else {
+        background.load("D:/images/login_bg.jpg");
+    }
+
+    if (!background.isNull()) {
+        background = background.scaled(this->size(),
+                                       Qt::KeepAspectRatioByExpanding,
+                                       Qt::SmoothTransformation);
+
+        QPalette palette;
+        palette.setBrush(QPalette::Window, background);
+        this->setPalette(palette);
+        this->setAutoFillBackground(true);
+    }
 }
 
 // Authentication methods (same as before)
@@ -762,7 +781,7 @@ void MainWindow::onGameButtonClicked()
 
             if (gameMode == "PvAI" && currentPlayer == "O") {
                 statusLabel->setText("🤖 AI is thinking...");
-                aiTimer->start(500);
+                aiTimer->start(100);
             }
         }
     }
@@ -873,7 +892,7 @@ void MainWindow::checkGameEnd()
 
         saveGameHistory(QString(winner));
 
-        QTimer::singleShot(500, [this, result]() {
+        QTimer::singleShot(100, [this, result]() {
             showGameOverDialog(result);
         });
     }
