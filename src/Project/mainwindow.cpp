@@ -12,8 +12,9 @@ MainWindow::MainWindow(QWidget *parent)
     board = nullptr;
     aiPlayer = nullptr;
     aiTimer = nullptr;
+    toolBar = nullptr;  // Add this line
 
-    setWindowTitle("Tic Tac Toe");
+    setWindowTitle("Tic Tac Toe - Synthwave Edition");
 
     // Initialize objects safely
     board = new Board();
@@ -21,11 +22,12 @@ MainWindow::MainWindow(QWidget *parent)
     aiTimer = new QTimer(this);
     aiTimer->setSingleShot(true);
 
-    // Setup UI BEFORE setting window properties to avoid early resize events
+    // Setup UI BEFORE setting window properties
     setupUI();
+    setupToolbar();      // Add this line - IMPORTANT!
     setupStyling();
 
-    // NOW set window properties (this may trigger resize events)
+    // NOW set window properties
     setWindowState(Qt::WindowFullScreen);
     setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
 
@@ -33,9 +35,7 @@ MainWindow::MainWindow(QWidget *parent)
     QRect screenGeometry = screen->geometry();
     setGeometry(screenGeometry);
 
-    // Set background after everything is initialized
     setBackgroundImage();
-
 
     // Start with login view
     if (stackedWidget && loginWidget) {
@@ -45,6 +45,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(aiTimer, &QTimer::timeout, this, &MainWindow::makeAIMove);
 }
+
 
 
 void MainWindow::setupUI()
@@ -214,7 +215,6 @@ void MainWindow::setupLoginView()
 
 void MainWindow::setupGameView()
 {
-
     gameMainLayout = new QHBoxLayout(gameWidget);
     gameMainLayout->setSpacing(20);
     gameMainLayout->setContentsMargins(20, 20, 20, 20);
@@ -226,8 +226,8 @@ void MainWindow::setupGameView()
     leftPanel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
 
     QVBoxLayout* leftLayout = new QVBoxLayout(leftPanel);
-    leftLayout->setSpacing(15);
-    leftLayout->setContentsMargins(10, 10, 10, 10);
+    leftLayout->setSpacing(10);  // Reduced spacing from 15 to 10
+    leftLayout->setContentsMargins(10, 20, 10, 10);  // Reduced top margin from 10 to 20
 
     // Title (more square-shaped)
     titleLabel = new QLabel("🎮 TIC TAC TOE 🎮", leftPanel);
@@ -247,11 +247,14 @@ void MainWindow::setupGameView()
     statusLabel->setObjectName("statusLabel");
     statusLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 
-    // Add banners to left panel
+    // Add banners to left panel with reduced spacing
+    leftLayout->addSpacing(10);  // Small top spacing
     leftLayout->addWidget(titleLabel);
+    leftLayout->addSpacing(5);   // Small spacing between widgets
     leftLayout->addWidget(playersLabel);
+    leftLayout->addSpacing(5);   // Small spacing between widgets
     leftLayout->addWidget(statusLabel);
-    leftLayout->addStretch();
+    leftLayout->addStretch();    // Push everything to top, leaving space at bottom
 
     // Create right panel for game grid
     rightPanel = new QWidget(gameWidget);
@@ -263,7 +266,6 @@ void MainWindow::setupGameView()
 
     // Game grid
     setupGameGrid();
-    setupToolbar();
 
     // Center the grid vertically and horizontally in right panel
     QHBoxLayout* gridCenterLayout = new QHBoxLayout();
@@ -278,8 +280,8 @@ void MainWindow::setupGameView()
     // Add panels to main layout
     gameMainLayout->addWidget(leftPanel);
     gameMainLayout->addWidget(rightPanel);
-
 }
+
 
 void MainWindow::setupGameGrid()
 {
@@ -324,6 +326,10 @@ void MainWindow::setupToolbar()
     toolBar = addToolBar("Game Controls");
     toolBar->setMovable(false);
     toolBar->setFloatable(false);
+    toolBar->setVisible(false);
+
+    // Hide toolbar initially (will be shown only in game view)
+    toolBar->setVisible(false);
 
     newGameAction = new QAction("🎯 New Game", this);
     historyAction = new QAction("📊 History", this);
@@ -339,6 +345,7 @@ void MainWindow::setupToolbar()
     connect(historyAction, &QAction::triggered, this, &MainWindow::onShowHistoryClicked);
     connect(logoutAction, &QAction::triggered, this, &MainWindow::onLogoutClicked);
 }
+
 
 void MainWindow::updateLayoutForMode()
 {
@@ -408,6 +415,7 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 void MainWindow::switchToGameView()
 {
     stackedWidget->setCurrentWidget(gameWidget);
+    toolBar->setVisible(true);
     QPixmap background;
 
     // Safe to check current widget
@@ -649,6 +657,7 @@ void MainWindow::onLogoutClicked()
 
     if (ret == QMessageBox::Yes) {
         stackedWidget->setCurrentWidget(loginWidget);
+        toolBar->setVisible(false);  // Hide toolbar in login view
         resetToModeSelection();
     }
 }
@@ -1737,18 +1746,15 @@ void MainWindow::setupStyling()
             border: 3px solid #8A2BE2;
         }
 
-        QToolBar {
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                stop:0 rgba(138, 43, 226, 0.9),
-                stop:0.5 rgba(255, 20, 147, 0.9),
-                stop:1 rgba(138, 43, 226, 0.9));
-            border: none;
+QToolBar {
+            background: transparent;  /* Transparent background */
+            border: none;             /* No border */
             spacing: 15px;
-            padding: 8px;
+            padding: 5px;             /* Reduced padding */
         }
 
         QToolButton {
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.8);  /* Semi-transparent background */
             color: white;
             border: 2px solid #00FFFF;
             border-radius: 8px;
@@ -1756,6 +1762,7 @@ void MainWindow::setupStyling()
             font-weight: bold;
             font-size: 12px;
             text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+            margin: 2px;  /* Small margin between buttons */
         }
 
         QToolButton:hover {

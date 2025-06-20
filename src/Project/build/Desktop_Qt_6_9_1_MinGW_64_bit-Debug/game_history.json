@@ -1428,6 +1428,65 @@
             ],
             "opponent": "AI",
             "winner": "X"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O11",
+                "X22",
+                "O01",
+                "X21",
+                "O20",
+                "X02",
+                "O12",
+                "X10"
+            ],
+            "opponent": "AI",
+            "winner": "T"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O11",
+                "X22",
+                "O01",
+                "X21",
+                "O20",
+                "X02",
+                "O12",
+                "X10"
+            ],
+            "opponent": "AI",
+            "winner": "T"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O11",
+                "X22",
+                "O01",
+                "X02",
+                "O21"
+            ],
+            "opponent": "AI",
+            "winner": "O"
+        },
+        {
+            "mode": "PvP",
+            "moves": [
+                "X00",
+                "O11",
+                "X22",
+                "O02",
+                "X20",
+                "O10",
+                "X21"
+            ],
+            "opponent": "Ammar",
+            "winner": "X"
         }
     ]
 }
