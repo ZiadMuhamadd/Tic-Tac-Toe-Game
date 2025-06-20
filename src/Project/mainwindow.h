@@ -63,6 +63,7 @@ private slots:
     void onShowHistoryClicked();
     void onLogoutClicked();
     void makeAIMove();
+    void onDifficultyChanged(int index);
 
 private:
     // UI Setup methods
@@ -137,6 +138,11 @@ private:
     QAction* newGameAction;
     QAction* historyAction;
     QAction* logoutAction;
+
+    // AI Difficulty System
+    QLabel* difficultyLabel;
+    QComboBox* difficultyComboBox;
+
 
     // Game Logic
     Board* board;

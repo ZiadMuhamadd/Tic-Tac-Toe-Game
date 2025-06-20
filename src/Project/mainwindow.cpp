@@ -10,21 +10,21 @@ MainWindow::MainWindow(QWidget *parent)
     loginWidget = nullptr;
     gameWidget = nullptr;
     board = nullptr;
-    aiPlayer = nullptr;
+    aiPlayer = nullptr;  // Single AI player
     aiTimer = nullptr;
-    toolBar = nullptr;  // Add this line
+    toolBar = nullptr;
 
     setWindowTitle("Tic Tac Toe - Synthwave Edition");
 
     // Initialize objects safely
     board = new Board();
-    aiPlayer = new AIPlayer();
+    aiPlayer = new AIPlayer(AIPlayer::MEDIUM);  // Default to hard difficulty
     aiTimer = new QTimer(this);
     aiTimer->setSingleShot(true);
 
     // Setup UI BEFORE setting window properties
     setupUI();
-    setupToolbar();      // Add this line - IMPORTANT!
+    setupToolbar();
     setupStyling();
 
     // NOW set window properties
@@ -46,25 +46,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(aiTimer, &QTimer::timeout, this, &MainWindow::makeAIMove);
 }
 
-
-
-void MainWindow::setupUI()
-{
-    // Create stacked widget as central widget
-    stackedWidget = new QStackedWidget(this);
-    setCentralWidget(stackedWidget);
-
-    // Create login and game widgets
-    loginWidget = new QWidget();
-    gameWidget = new QWidget();
-
-    stackedWidget->addWidget(loginWidget);
-    stackedWidget->addWidget(gameWidget);
-
-    setupLoginView();
-    setupGameView();
-    updateLayoutForMode();
-}
 
 void MainWindow::setupLoginView()
 {
@@ -225,6 +206,23 @@ void MainWindow::setupLoginView()
     connect(exitButton, &QPushButton::clicked, this, &MainWindow::onExitClicked);
     connect(fullScreenToggleButton, &QPushButton::clicked, this, &MainWindow::toggleFullScreen);
 }
+void MainWindow::setupUI()
+{
+    // Create stacked widget as central widget
+    stackedWidget = new QStackedWidget(this);
+    setCentralWidget(stackedWidget);
+
+    // Create login and game widgets
+    loginWidget = new QWidget();
+    gameWidget = new QWidget();
+
+    stackedWidget->addWidget(loginWidget);
+    stackedWidget->addWidget(gameWidget);
+
+    setupLoginView();
+    setupGameView();
+    updateLayoutForMode();
+}
 
 
 void MainWindow::setupGameView()
@@ -240,8 +238,8 @@ void MainWindow::setupGameView()
     leftPanel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
 
     QVBoxLayout* leftLayout = new QVBoxLayout(leftPanel);
-    leftLayout->setSpacing(10);  // Reduced spacing from 15 to 10
-    leftLayout->setContentsMargins(10, 20, 10, 10);  // Reduced top margin from 10 to 20
+    leftLayout->setSpacing(10);
+    leftLayout->setContentsMargins(10, 20, 10, 10);
 
     // Title (more square-shaped)
     titleLabel = new QLabel("🎮 TIC TAC TOE 🎮", leftPanel);
@@ -261,14 +259,30 @@ void MainWindow::setupGameView()
     statusLabel->setObjectName("statusLabel");
     statusLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 
+    // Difficulty selection (NEW!)
+    difficultyLabel = new QLabel("🎯 AI Difficulty:", leftPanel);
+    difficultyLabel->setAlignment(Qt::AlignCenter);
+    difficultyLabel->setObjectName("difficultyLabel");
+    difficultyLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+
+    difficultyComboBox = new QComboBox(leftPanel);
+    difficultyComboBox->addItem("😊 Easy");
+    difficultyComboBox->addItem("🤔 Medium");
+    difficultyComboBox->addItem("😈 Hard");
+    difficultyComboBox->setCurrentIndex(1); // Default to Hard
+    difficultyComboBox->setObjectName("difficultyComboBox");
+
     // Add banners to left panel with reduced spacing
-    leftLayout->addSpacing(10);  // Small top spacing
+    leftLayout->addSpacing(10);
     leftLayout->addWidget(titleLabel);
-    leftLayout->addSpacing(5);   // Small spacing between widgets
+    leftLayout->addSpacing(5);
     leftLayout->addWidget(playersLabel);
-    leftLayout->addSpacing(5);   // Small spacing between widgets
+    leftLayout->addSpacing(5);
     leftLayout->addWidget(statusLabel);
-    leftLayout->addStretch();    // Push everything to top, leaving space at bottom
+    leftLayout->addSpacing(8);
+    leftLayout->addWidget(difficultyLabel);
+    leftLayout->addWidget(difficultyComboBox);
+    leftLayout->addStretch();
 
     // Create right panel for game grid
     rightPanel = new QWidget(gameWidget);
@@ -294,7 +308,12 @@ void MainWindow::setupGameView()
     // Add panels to main layout
     gameMainLayout->addWidget(leftPanel);
     gameMainLayout->addWidget(rightPanel);
+
+    // Connect difficulty change signal
+    connect(difficultyComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &MainWindow::onDifficultyChanged);
 }
+
 
 
 void MainWindow::setupGameGrid()
@@ -359,6 +378,41 @@ void MainWindow::setupToolbar()
     connect(historyAction, &QAction::triggered, this, &MainWindow::onShowHistoryClicked);
     connect(logoutAction, &QAction::triggered, this, &MainWindow::onLogoutClicked);
 }
+void MainWindow::onDifficultyChanged(int index)
+{
+    // Only show difficulty for AI games
+    if (gameMode != "PvAI" || !aiPlayer) {
+        return;
+    }
+
+    // Switch AI difficulty
+    QString message;
+    switch (index) {
+    case 0: // Easy
+        aiPlayer->setDifficulty(AIPlayer::EASY);
+        message = "🎮 Switched to Easy Mode!\n\nDon't Defeat Me! Let's be friends 😊. Starting a new game...";
+        break;
+
+    case 1: // Medium
+        aiPlayer->setDifficulty(AIPlayer::MEDIUM);
+        message = "🎮 Switched to Medium Mode!\n\nHeyy Champ! I will give No Mercy 🤔 . A good challenge! Starting a new game...";
+        break;
+
+    case 2: // Hard
+    default:
+        aiPlayer->setDifficulty(AIPlayer::HARD);
+        message = "🎮 Switched to Hard Mode!\n\nHeyy Champ! You Don't have a chance 😈 . Good luck! Starting a new game...";
+        break;
+    }
+
+    QMessageBox::information(this, "Difficulty Changed", message);
+
+    // Start new game with new difficulty
+    resetGame();
+}
+
+
+
 
 
 void MainWindow::updateLayoutForMode()
@@ -448,6 +502,12 @@ void MainWindow::switchToGameView()
         palette.setBrush(QPalette::Window, background);
         this->setPalette(palette);
         this->setAutoFillBackground(true);
+    }
+    // Show/hide difficulty based on game mode
+    if (difficultyLabel && difficultyComboBox) {
+        bool showDifficulty = (gameMode == "PvAI");
+        difficultyLabel->setVisible(showDifficulty);
+        difficultyComboBox->setVisible(showDifficulty);
     }
     resetGame();
     updateGameStatus();
@@ -789,32 +849,36 @@ void MainWindow::onGameButtonClicked()
 
 void MainWindow::makeAIMove()
 {
-     if (!gameActive || currentPlayer != "O" || !board || !aiPlayer) return;
+    if (!gameActive || currentPlayer != "O" || !board || !aiPlayer) return;
 
     auto availableMoves = board->getAvailableMoves();
     if (!availableMoves.empty()) {
-        auto move = aiPlayer->getMove(board);
+        auto move = aiPlayer->getMove(board);  // Uses current difficulty setting
         int row = move.first;
         int col = move.second;
 
-        if (board->makeMove(row, col, 'O')) {
-            gameButtons[row][col]->setText("O");
-            gameButtons[row][col]->setStyleSheet(gameButtons[row][col]->styleSheet() +
-                                                 " color: #00FFFF; text-shadow: 0 0 15px #00FFFF;");
-            animateButton(gameButtons[row][col]);
+        // Validate move coordinates
+        if (row >= 0 && row < 3 && col >= 0 && col < 3) {
+            if (board->makeMove(row, col, 'O')) {
+                gameButtons[row][col]->setText("O");
+                gameButtons[row][col]->setStyleSheet(gameButtons[row][col]->styleSheet() +
+                                                     " color: #00FFFF; text-shadow: 0 0 15px #00FFFF;");
+                animateButton(gameButtons[row][col]);
 
-            QString moveStr = QString("O%1%2").arg(row).arg(col);
-            moveHistory.append(moveStr);
+                QString moveStr = QString("O%1%2").arg(row).arg(col);
+                moveHistory.append(moveStr);
 
-            checkGameEnd();
+                checkGameEnd();
 
-            if (gameActive) {
-                currentPlayer = "X";
-                updateGameStatus();
+                if (gameActive) {
+                    currentPlayer = "X";
+                    updateGameStatus();
+                }
             }
         }
     }
 }
+
 
 void MainWindow::animateButton(QPushButton* button)
 {
@@ -1842,6 +1906,53 @@ QToolBar {
             color: #00FFFF;
             border-top: 2px solid #00FFFF;
         }
+#difficultyLabel {
+    color: #FFD700;
+    font-size: 14px;
+    font-weight: bold;
+    text-shadow: 0 0 8px #FFD700;
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid #FFD700;
+    border-radius: 15px;
+    padding: 12px;
+    margin: 3px;
+    min-height: 40px;
+}
+
+#difficultyComboBox {
+    background: rgba(75, 0, 130, 0.9);
+    color: white;
+    border: 2px solid #9370DB;
+    border-radius: 12px;
+    padding: 10px 15px;
+    font-size: 14px;
+    font-weight: bold;
+    min-height: 20px;
+    margin: 3px;
+}
+
+#difficultyComboBox::drop-down {
+    border: none;
+    background: rgba(138, 43, 226, 0.8);
+    border-radius: 5px;
+}
+
+#difficultyComboBox::down-arrow {
+    image: none;
+    border: 4px solid transparent;
+    border-top: 6px solid white;
+    margin-right: 8px;
+}
+
+#difficultyComboBox QAbstractItemView {
+    background: rgba(75, 0, 130, 0.95);
+    color: white;
+    border: 2px solid #9370DB;
+    border-radius: 8px;
+    selection-background-color: rgba(255, 20, 147, 0.8);
+}
+
+
     )";
 
     this->setStyleSheet(style);

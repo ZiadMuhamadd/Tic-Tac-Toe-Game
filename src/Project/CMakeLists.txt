@@ -15,10 +15,10 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # Define source and header files separately
 set(SOURCES
     main.cpp
-
     MainWindow.cpp
     Board.cpp
     AIPlayer.cpp
+
 )
 
 set(HEADERS
@@ -26,10 +26,12 @@ set(HEADERS
     MainWindow.h
     Board.h
     AIPlayer.h
+
 )
 
 # Create executable with both sources and headers
-add_executable(TicTacToe ${SOURCES} ${HEADERS})
+add_executable(TicTacToe ${SOURCES} ${HEADERS}
+)
 
 # Link libraries
 target_link_libraries(TicTacToe PRIVATE Qt6::Core Qt6::Widgets)

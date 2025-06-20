@@ -1592,6 +1592,453 @@
             ],
             "opponent": "AI",
             "winner": "T"
+        },
+        {
+            "mode": "PvP",
+            "moves": [
+                "X00",
+                "O11",
+                "X22",
+                "O20",
+                "X02",
+                "O01",
+                "X12"
+            ],
+            "opponent": "Hamdi",
+            "winner": "X"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O01",
+                "X11",
+                "O12",
+                "X22"
+            ],
+            "opponent": "AI",
+            "winner": "X"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O01",
+                "X10",
+                "O11",
+                "X20"
+            ],
+            "opponent": "AI",
+            "winner": "X"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O01",
+                "X02",
+                "O12",
+                "X11",
+                "O21",
+                "X22"
+            ],
+            "opponent": "AI",
+            "winner": "X"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O11",
+                "X22",
+                "O01",
+                "X21",
+                "O20",
+                "X02",
+                "O12",
+                "X10"
+            ],
+            "opponent": "AI",
+            "winner": "T"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O11",
+                "X22",
+                "O01",
+                "X21",
+                "O20",
+                "X02",
+                "O12",
+                "X10"
+            ],
+            "opponent": "AI",
+            "winner": "T"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O11",
+                "X22",
+                "O01",
+                "X21",
+                "O20",
+                "X02",
+                "O12",
+                "X10"
+            ],
+            "opponent": "AI",
+            "winner": "T"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O11",
+                "X22",
+                "O01",
+                "X21",
+                "O20",
+                "X02",
+                "O12",
+                "X10"
+            ],
+            "opponent": "AI",
+            "winner": "T"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O11",
+                "X22",
+                "O01",
+                "X21",
+                "O20",
+                "X02",
+                "O12",
+                "X10"
+            ],
+            "opponent": "AI",
+            "winner": "T"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O11",
+                "X22",
+                "O01",
+                "X12",
+                "O21"
+            ],
+            "opponent": "AI",
+            "winner": "O"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O11",
+                "X22",
+                "O01",
+                "X21",
+                "O20",
+                "X02",
+                "O12",
+                "X10"
+            ],
+            "opponent": "AI",
+            "winner": "T"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O11",
+                "X02",
+                "O01",
+                "X21",
+                "O10",
+                "X12",
+                "O22",
+                "X20"
+            ],
+            "opponent": "AI",
+            "winner": "T"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O11",
+                "X20",
+                "O10",
+                "X12",
+                "O01",
+                "X21",
+                "O22",
+                "X02"
+            ],
+            "opponent": "AI",
+            "winner": "T"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O01",
+                "X11",
+                "O02",
+                "X22"
+            ],
+            "opponent": "AI",
+            "winner": "X"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O11",
+                "X01",
+                "O02",
+                "X20",
+                "O10",
+                "X12",
+                "O21",
+                "X22"
+            ],
+            "opponent": "AI",
+            "winner": "T"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O11",
+                "X20",
+                "O10",
+                "X12",
+                "O01",
+                "X21",
+                "O22",
+                "X02"
+            ],
+            "opponent": "AI",
+            "winner": "T"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O11",
+                "X22",
+                "O01",
+                "X21",
+                "O20",
+                "X02",
+                "O12",
+                "X10"
+            ],
+            "opponent": "AI",
+            "winner": "T"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O11",
+                "X22",
+                "O01",
+                "X21",
+                "O20",
+                "X02",
+                "O12",
+                "X10"
+            ],
+            "opponent": "AI",
+            "winner": "T"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O12",
+                "X22",
+                "O10",
+                "X11"
+            ],
+            "opponent": "AI",
+            "winner": "X"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O11",
+                "X22",
+                "O21",
+                "X01",
+                "O02",
+                "X20",
+                "O10",
+                "X12"
+            ],
+            "opponent": "AI",
+            "winner": "T"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O20",
+                "X11",
+                "O22",
+                "X21",
+                "O01",
+                "X10",
+                "O12",
+                "X02"
+            ],
+            "opponent": "AI",
+            "winner": "T"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X11",
+                "O00",
+                "X22",
+                "O10",
+                "X20",
+                "O02",
+                "X21"
+            ],
+            "opponent": "AI",
+            "winner": "X"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X11",
+                "O00",
+                "X22",
+                "O21",
+                "X12",
+                "O02",
+                "X10"
+            ],
+            "opponent": "AI",
+            "winner": "X"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O11",
+                "X10",
+                "O20",
+                "X02",
+                "O01",
+                "X21",
+                "O22",
+                "X12"
+            ],
+            "opponent": "AI",
+            "winner": "T"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O11",
+                "X22",
+                "O01",
+                "X21",
+                "O20",
+                "X02",
+                "O12",
+                "X10"
+            ],
+            "opponent": "AI",
+            "winner": "T"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X11",
+                "O00",
+                "X22",
+                "O10",
+                "X20",
+                "O01",
+                "X02"
+            ],
+            "opponent": "AI",
+            "winner": "X"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O11",
+                "X22",
+                "O01",
+                "X21",
+                "O20",
+                "X02",
+                "O12",
+                "X10"
+            ],
+            "opponent": "AI",
+            "winner": "T"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O01",
+                "X11",
+                "O02",
+                "X22"
+            ],
+            "opponent": "AI",
+            "winner": "X"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X00",
+                "O11",
+                "X10",
+                "O20",
+                "X02",
+                "O01",
+                "X21",
+                "O12",
+                "X22"
+            ],
+            "opponent": "AI",
+            "winner": "T"
+        },
+        {
+            "mode": "PvAI",
+            "moves": [
+                "X11",
+                "O00",
+                "X22",
+                "O02",
+                "X01",
+                "O21",
+                "X12",
+                "O20",
+                "X10"
+            ],
+            "opponent": "AI",
+            "winner": "X"
         }
     ]
 }
